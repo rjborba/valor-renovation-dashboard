@@ -42,7 +42,9 @@ test('creates, edits and deletes a shared task, persisting its owners, status an
   expect(created).toMatchObject({ description, dueDate: '2027-04-10', status: 'In progress' });
   expect([...created.assignees].sort()).toEqual(['Electrician', 'Site lead']);
   await page.reload();
-  await row.getByRole('button', { name: `Edit task: ${description}` }).click();
+  // Click the row's padding, away from its title and action controls.
+  await row.click({ position: { x: 2, y: 2 } });
+  await expect(page.getByRole('dialog', { name: 'Edit task' })).toBeVisible();
 
   const edit = page.getByRole('dialog');
   await expect(edit.getByLabel('Promised due date')).toHaveValue('2027-04-10');

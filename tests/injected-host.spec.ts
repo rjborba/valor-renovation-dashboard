@@ -30,7 +30,7 @@ test('the real dashboard and remotes read and mutate an injected in-memory repos
   const row = board(page).getByRole('article', { name: 'Inspect the injected board' });
   await expect(row).toContainText('Inspector');
   await expectProgress(page, 0, 1);
-  await row.getByRole('button', { name: 'Edit task: Inspect the injected board' }).click();
+  await row.getByRole('button', { name: 'Edit task: Inspect the injected board' }).press('Enter');
   const editor = page.getByRole('dialog');
   await editor.getByLabel('Status', { exact: true }).selectOption('Done');
   await editor.getByRole('button', { name: 'Save changes' }).click();

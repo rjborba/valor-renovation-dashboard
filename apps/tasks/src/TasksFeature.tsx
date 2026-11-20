@@ -44,12 +44,21 @@ function TaskRow({
 
   return (
     <article
-      className="grid min-w-0 gap-x-3 gap-y-2 py-3 @3xs:grid-cols-[minmax(0,1fr)_auto] @3xs:items-center @lg:items-start @3xl:grid-cols-[minmax(0,1fr)_auto_auto] @3xl:items-center"
+      className="relative isolate grid min-w-0 gap-x-3 gap-y-2 py-3 hover:bg-muted/40 @3xs:grid-cols-[minmax(0,1fr)_auto] @3xs:items-center @lg:items-start @3xl:grid-cols-[minmax(0,1fr)_auto_auto] @3xl:items-center"
       aria-labelledby={titleId}
     >
       <div className="min-w-0 @3xs:col-span-2 @lg:col-span-1 @lg:row-span-2 @3xl:row-span-1">
-        <h3 id={titleId} className="text-sm leading-5 font-semibold [overflow-wrap:anywhere] whitespace-pre-wrap">
-          {task.description}
+        <h3 className="text-sm leading-5 font-semibold">
+          <button
+            type="button"
+            disabled={saving}
+            aria-haspopup="dialog"
+            aria-label={`Edit task: ${task.description}`}
+            className="cursor-pointer text-left [overflow-wrap:anywhere] whitespace-pre-wrap outline-none after:absolute after:inset-0 after:rounded-sm focus-visible:after:ring-2 focus-visible:after:ring-ring disabled:cursor-default"
+            onClick={event => open({ kind: 'edit', task }, event.currentTarget)}
+          >
+            <span id={titleId}>{task.description}</span>
+          </button>
         </h3>
         <ul className="mt-1.5 flex flex-wrap gap-1" aria-label="Assignees" role="list">
           {task.assignees.map((assignee) => (
@@ -62,7 +71,9 @@ function TaskRow({
         </ul>
       </div>
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1 @lg:justify-end">
-        <TaskStatusMenu status={task.status} onChange={changeStatus} disabled={saving} />
+        <div className="relative z-10 inline-flex">
+          <TaskStatusMenu status={task.status} onChange={changeStatus} disabled={saving} />
+        </div>
         <dl>
           <dt className="sr-only">Promised due date</dt>
           <dd className="text-xs font-medium whitespace-nowrap text-muted-foreground tabular-nums">
@@ -70,24 +81,13 @@ function TaskRow({
           </dd>
         </dl>
       </div>
-      <div className="-mx-2 flex flex-wrap items-center gap-1 @3xs:mx-0 @3xs:justify-end">
+      <div className="-mx-2 flex @3xs:mx-0 @3xs:justify-end">
         <Button
           type="button"
           disabled={saving}
           variant="ghost"
           size="sm"
-          className="h-9 px-2 @lg:h-8"
-          aria-label={`Edit task: ${task.description}`}
-          onClick={(event) => open({ kind: 'edit', task }, event.currentTarget)}
-        >
-          Edit
-        </Button>
-        <Button
-          type="button"
-          disabled={saving}
-          variant="ghost"
-          size="sm"
-          className="h-9 px-2 text-muted-foreground hover:bg-destructive/10 hover:text-destructive @lg:h-8"
+          className="relative z-10 h-9 px-2 text-muted-foreground hover:bg-destructive/10 hover:text-destructive @lg:h-8"
           aria-label={`Delete task: ${task.description}`}
           onClick={(event) => open({ kind: 'delete', task }, event.currentTarget)}
         >
