@@ -47,3 +47,36 @@ test('the standalone Tasks consumer and Editor app can each open the editor', as
     await expect(page.getByRole('button', { name: 'Add task', exact: true })).toBeFocused();
   }
 });
+
+test('an editor render failure stays inside the modal and retries with the board intact', async ({ page }) => {
+  await page.goto('/');
+  const filter = page.getByRole('combobox', { name: 'Assignee' });
+  await filter.selectOption('Engineer');
+  const add = board(page).getByRole('button', { name: 'Add task' });
+  const row = board(page).getByRole('article').first();
+  const originalRow = await row.elementHandle();
+
+  // The new-task form reads the local year while rendering its default due date.
+  const restore = await page.evaluateHandle(() => {
+    const getFullYear = Date.prototype.getFullYear;
+    Date.prototype.getFullYear = () => { throw new Error('Simulated editor render failure'); };
+    return () => { Date.prototype.getFullYear = getFullYear; };
+  });
+  await add.click();
+  const fallback = page.getByRole('dialog', { name: 'Task editor', exact: true });
+  await expect(fallback.getByRole('alert')).toBeVisible();
+  await fallback.getByRole('button', { name: 'Cancel' }).click();
+  await expect(add).toBeFocused();
+  await expect(filter).toHaveValue('Engineer');
+
+  await add.click();
+  await expect(fallback.getByRole('alert')).toBeVisible();
+  await restore.evaluate(undo => undo());
+  await fallback.getByRole('button', { name: 'Retry editor' }).click();
+  const editor = page.getByRole('dialog', { name: 'Add task', exact: true });
+  await expect(editor.getByLabel('Description')).toBeFocused();
+  await editor.press('Escape');
+  await expect(add).toBeFocused();
+  await expectProgress(page, 0, 1);
+  expect(await originalRow!.evaluate(el => el.isConnected)).toBe(true);
+});

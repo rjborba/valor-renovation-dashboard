@@ -31,7 +31,7 @@ Turborepo runs the dashboard on <http://localhost:3000>, Tasks on <http://localh
 | Filters | Status and assignee controls | Exposes `filters/FiltersFeature`. Sends selections to the host so the board and summary update together |
 | Reports | Displayed task total, completion and status counts | Exposes `reports/ReportsFeature`. Computes its summary from the tasks supplied by the host |
 
-Each remote is an independent Rspack build. The dashboard downloads the remote manifests and JavaScript at runtime. React and React DOM are shared singletons. The colored outlines show the exact federation imports. Each remote has its own loading state and retry action, so a single failed remote can recover while the others remain usable.
+Each remote is an independent Rspack build. The dashboard downloads the remote manifests and JavaScript at runtime. React and React DOM are shared singletons. The colored outlines show the exact federation imports. Each consumer wraps its remote in a React error boundary. Tasks owns the nested boundary around `editor/TaskEditor`. If the editor fails to load or render, the modal offers Retry and Cancel while the filtered task board stays mounted.
 
 ## Shared UI
 

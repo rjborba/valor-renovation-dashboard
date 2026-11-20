@@ -1,43 +1,19 @@
 import {
-  Component,
   lazy,
   Suspense,
   useId,
   useState,
   type ComponentType,
-  type ReactNode,
 } from 'react';
 import { TaskBoard } from '@valor/task-board';
 import type { TaskRepository } from '@valor/contracts/storage';
 import { retryRemote } from '../../../config/retryRemote';
-import { Button } from '@valor/ui';
+import { Button, FeatureBoundary } from '@valor/ui';
 import '@valor/ui/styles.css';
 
 const loadTasks = () => import('tasks/TasksFeature');
 const loadReports = () => import('reports/ReportsFeature');
 const loadFilters = () => import('filters/FiltersFeature');
-
-class FeatureBoundary extends Component<
-  { name: string; retry: () => void; children: ReactNode },
-  { failed: boolean }
-> {
-  state = { failed: false };
-  static getDerivedStateFromError() {
-    return { failed: true };
-  }
-  render() {
-    if (this.state.failed) {
-      return (
-        <div className="space-y-3 p-5 text-sm" role="alert">
-          <h2 className="font-semibold">{this.props.name} is unavailable</h2>
-          <p className="text-muted-foreground">Your current filters are saved for this session.</p>
-          <Button variant="outline" size="sm" onClick={this.props.retry}>Retry {this.props.name}</Button>
-        </div>
-      );
-    }
-    return this.props.children;
-  }
-}
 
 const moduleColors = {
   Tasks: { border: 'border-indigo-500', label: 'bg-indigo-50 text-indigo-800' },
@@ -81,7 +57,13 @@ function RemoteFeature<P extends object>({
         <span className="font-sans">Federated module</span>
         <code>{moduleId}</code>
       </div>
-      <FeatureBoundary key={attempt.id} name={name} retry={retry}>
+      <FeatureBoundary key={attempt.id} fallback={
+        <div className="space-y-3 p-5 text-sm" role="alert">
+          <h2 className="font-semibold">{name} is unavailable</h2>
+          <p className="text-muted-foreground">Your current filters are saved for this session.</p>
+          <Button variant="outline" size="sm" onClick={retry}>Retry {name}</Button>
+        </div>
+      }>
         <Suspense
           fallback={
             <div className="p-5 text-sm text-muted-foreground" role="status">

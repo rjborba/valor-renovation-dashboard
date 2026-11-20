@@ -13,3 +13,4 @@ export { Textarea } from './components/textarea';
 export { TaskStatusSymbol } from './components/task-status-symbol';
 export { TaskStatusMenu } from './components/task-status-menu';
 export { TaskStatusFilter } from './components/task-status-filter';
+export { FeatureBoundary } from './components/feature-boundary';
