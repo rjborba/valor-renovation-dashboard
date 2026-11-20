@@ -9,6 +9,11 @@
     },
     "build:local": {
       "dependsOn": ["^build:local"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "$TURBO_ROOT$/packages/*/src/**",
+        "$TURBO_ROOT$/apps/*/src/**"
+      ],
       "outputs": ["dist/**"]
     }
   }

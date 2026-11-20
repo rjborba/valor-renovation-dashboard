@@ -4,6 +4,11 @@
   "private": true,
   "type": "module",
   "exports": "./src/TaskBoard.tsx",
-  "dependencies": { "@valor/contracts": "1.0.0" },
-  "peerDependencies": { "react": "^19.3.1" }
+  "dependencies": {
+    "@valor/contracts": "1.0.0",
+    "@valor/ui": "1.0.0"
+  },
+  "peerDependencies": {
+    "react": "^19.3.1"
+  }
 }

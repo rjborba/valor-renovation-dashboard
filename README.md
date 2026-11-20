@@ -31,6 +31,10 @@ Turborepo runs the dashboard on <http://localhost:3000>, Tasks on <http://localh
 
 Each remote is an independent Rspack build. The dashboard downloads the remote manifests and JavaScript at runtime. React and React DOM are shared singletons. The colored outlines show the exact federation imports. Each feature has its own loading state, error boundary and retry action, so a single failed remote can recover while the other remains usable.
 
+## Shared UI
+
+The dashboard and both remotes use Tailwind CSS and shadcn/ui components from `packages/ui`. The task list, editor, and progress panel use the same theme. Each app ships CSS for standalone use. Tailwind scans the same app and component sources for each build, keeping breakpoint rules in the same order when a remote stylesheet loads after the dashboard.
+
 ## Where tasks are saved
 
 The first visit seeds five fictional example tasks. Changes are saved in this browser profile under `valor:renovation-tracker:tasks:v1`. An empty board stays empty after reload. The previous purchase store is left intact.

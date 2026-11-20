@@ -1,6 +1,7 @@
 const path = require('node:path');
 const { rspack } = require('@rspack/core');
 const { ModuleFederationPlugin } = require('@module-federation/enhanced/rspack');
+const tailwind = require('@tailwindcss/postcss');
 
 module.exports = function createConfig(context, port, federation) {
   return (env) => {
@@ -15,6 +16,8 @@ module.exports = function createConfig(context, port, federation) {
         publicPath: 'auto',
         filename: scriptFilename,
         chunkFilename: scriptFilename,
+        cssFilename: env?.RSPACK_SERVE ? '[name].css' : '[name].[contenthash].css',
+        cssChunkFilename: env?.RSPACK_SERVE ? '[name].css' : '[name].[contenthash].css',
         clean: true,
       },
       resolve: { extensions: ['.tsx', '.ts', '.jsx', '.js', '.json'] },
@@ -34,6 +37,19 @@ module.exports = function createConfig(context, port, federation) {
             },
           },
           { test: /\.css$/, type: 'css/auto' },
+          {
+            test: /\.css$/,
+            include: require.resolve('@valor/ui/styles.css'),
+            use: {
+              loader: 'postcss-loader',
+              options: {
+                postcssOptions: {
+                  config: false,
+                  plugins: [tailwind()],
+                },
+              },
+            },
+          },
           { test: /\.(png|jpe?g|gif|webp|avif|svg|woff2?)$/i, type: 'asset/resource' },
         ],
       },

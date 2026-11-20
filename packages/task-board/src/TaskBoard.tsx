@@ -6,6 +6,7 @@ import {
   type RenovationTask,
   type TasksFeatureProps,
 } from '@valor/contracts';
+import { Button } from '@valor/ui';
 import { taskRepository, type TaskRepository } from '@valor/contracts/storage';
 
 export function TaskBoard({
@@ -39,14 +40,14 @@ export function TaskBoard({
 
   if (loadError) {
     return (
-      <div role="alert" className="feature-message">
-        <h2>Could not open your task board</h2>
+      <div role="alert" className="space-y-3 rounded-lg border bg-card p-5 text-sm">
+        <h2 className="font-semibold">Could not open your task board</h2>
         <p>{loadError}</p>
-        <button onClick={() => setAttempt(n => n + 1)}>Retry loading tasks</button>
+        <Button variant="outline" size="sm" onClick={() => setAttempt(n => n + 1)}>Retry loading tasks</Button>
       </div>
     );
   }
-  if (records === null) return <p role="status">Loading tasks…</p>;
+  if (records === null) return <p role="status" className="p-4 text-sm text-muted-foreground">Loading tasks…</p>;
 
   async function apply(change: Promise<readonly RenovationTask[]>, revealId?: string) {
     const current = generation.current;

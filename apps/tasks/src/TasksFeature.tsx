@@ -6,8 +6,9 @@ import {
   type TaskStatus,
   type TasksFeatureProps,
 } from '@valor/contracts';
+import { Badge, Button, Card, Label, NativeSelect, NativeSelectOption } from '@valor/ui';
+import '@valor/ui/styles.css';
 import TaskDialog, { type TaskAction } from './TaskDialog';
-import './tasks.css';
 
 const dateFormat = new Intl.DateTimeFormat('en-GB', {
   day: 'numeric',
@@ -15,6 +16,12 @@ const dateFormat = new Intl.DateTimeFormat('en-GB', {
   year: 'numeric',
   timeZone: 'UTC',
 });
+
+const statusStyles: Record<TaskStatus, string> = {
+  Open: 'bg-muted text-foreground',
+  'In progress': 'bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200',
+  Done: 'bg-emerald-50 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200',
+};
 
 function TaskRow({
   task,
@@ -26,38 +33,56 @@ function TaskRow({
   const titleId = useId();
 
   return (
-    <article className="task-board__card" aria-labelledby={titleId}>
-      <div className="task-board__card-copy">
-        <h3 id={titleId}>{task.description}</h3>
-        <ul className="task-board__owners" aria-label="Assignees" role="list">
-          {task.assignees.map((assignee) => <li key={assignee}>{assignee}</li>)}
+    <article
+      className="grid min-w-0 gap-x-3 gap-y-2 py-3 @xs:grid-cols-[minmax(0,1fr)_auto] @3xl:grid-cols-[minmax(0,1fr)_auto_auto] @3xl:items-center"
+      aria-labelledby={titleId}
+    >
+      <div className="min-w-0 @xs:col-span-2 @lg:col-span-1 @lg:row-span-2 @3xl:row-span-1">
+        <h3 id={titleId} className="text-sm leading-5 font-semibold [overflow-wrap:anywhere] whitespace-pre-wrap">
+          {task.description}
+        </h3>
+        <ul className="mt-1.5 flex flex-wrap gap-1" aria-label="Assignees" role="list">
+          {task.assignees.map((assignee) => (
+            <li key={assignee} className="min-w-0 max-w-full">
+              <Badge variant="secondary" className="max-w-full rounded-md text-muted-foreground [overflow-wrap:anywhere] whitespace-normal">
+                {assignee}
+              </Badge>
+            </li>
+          ))}
         </ul>
       </div>
-      <div className="task-board__card-meta">
-        <span className="task-board__status" data-status={task.status}>{task.status}</span>
-        <dl className="task-board__date">
-          <dt>Promised due date</dt>
-          <dd>
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 @lg:justify-end">
+        <Badge variant="secondary" className={`rounded-md ${statusStyles[task.status]}`} data-status={task.status}>
+          {task.status}
+        </Badge>
+        <dl>
+          <dt className="sr-only">Promised due date</dt>
+          <dd className="text-xs font-medium whitespace-nowrap text-muted-foreground tabular-nums">
             <time dateTime={task.dueDate}>{dateFormat.format(new Date(task.dueDate))}</time>
           </dd>
         </dl>
       </div>
-      <div className="task-board__row-actions">
-        <button
+      <div className="-mx-2 flex flex-wrap items-center gap-1 @xs:mx-0 @xs:justify-end">
+        <Button
           type="button"
+          variant="ghost"
+          size="sm"
+          className="h-9 px-2 @lg:h-8"
           aria-label={`Edit task: ${task.description}`}
           onClick={(event) => open({ kind: 'edit', task }, event.currentTarget)}
         >
-          Edit task
-        </button>
-        <button
+          Edit
+        </Button>
+        <Button
           type="button"
-          className="task-board__delete-link"
+          variant="ghost"
+          size="sm"
+          className="h-9 px-2 text-muted-foreground hover:bg-destructive/10 hover:text-destructive @lg:h-8"
           aria-label={`Delete task: ${task.description}`}
           onClick={(event) => open({ kind: 'delete', task }, event.currentTarget)}
         >
-          Delete task
-        </button>
+          Delete
+        </Button>
       </div>
     </article>
   );
@@ -88,79 +113,88 @@ export default function TasksFeature({
   }
 
   function closeDialog(message = '') {
+    const opener = trigger.current;
     setAction(null);
     setAnnouncement(message);
     requestAnimationFrame(() => {
-      const opener = trigger.current;
       (opener?.isConnected ? opener : addButton.current)?.focus();
     });
   }
 
   return (
-    <section className="task-board" aria-labelledby={headingId}>
-      <header className="task-board__heading">
-        <h2 id={headingId}>Task board</h2>
-        <button
+    <section className="@container min-w-0 p-4 font-sans text-foreground" aria-labelledby={headingId}>
+      <header className="flex flex-wrap items-center justify-between gap-3">
+        <h2 id={headingId} className="text-xl leading-tight font-semibold tracking-tight">Task board</h2>
+        <Button
           ref={addButton}
-          className="task-board__primary"
           type="button"
           onClick={(event) => openDialog({ kind: 'add' }, event.currentTarget)}
         >
           Add task
-        </button>
+        </Button>
       </header>
 
-      <div className="task-board__filters" role="group" aria-label="Task filters">
-        <div className="task-board__field">
-          <label htmlFor={statusId}>Status</label>
-          <select
+      <div
+        className="mt-4 grid grid-cols-1 items-end gap-x-3 gap-y-2 @3xs:grid-cols-2 @lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]"
+        role="group"
+        aria-label="Task filters"
+      >
+        <div className="grid min-w-0 gap-1.5 [&>[data-slot=native-select-wrapper]]:w-full">
+          <Label htmlFor={statusId} className="text-xs text-muted-foreground">Status</Label>
+          <NativeSelect
             id={statusId}
+            className="h-9 w-full min-w-0 bg-card"
             value={filters.status}
             onChange={(event) => onFiltersChange({ ...filters, status: event.currentTarget.value as TaskStatus | '' })}
           >
-            <option value="">All statuses</option>
-            {taskStatuses.map((status) => <option key={status}>{status}</option>)}
-          </select>
+            <NativeSelectOption value="">All statuses</NativeSelectOption>
+            {taskStatuses.map((status) => <NativeSelectOption key={status}>{status}</NativeSelectOption>)}
+          </NativeSelect>
         </div>
-        <div className="task-board__field">
-          <label htmlFor={assigneeId}>Assignee</label>
-          <select
+        <div className="grid min-w-0 gap-1.5 [&>[data-slot=native-select-wrapper]]:w-full">
+          <Label htmlFor={assigneeId} className="text-xs text-muted-foreground">Assignee</Label>
+          <NativeSelect
             id={assigneeId}
+            className="h-9 w-full min-w-0 bg-card"
             value={filters.assignee}
             onChange={(event) => onFiltersChange({ ...filters, assignee: event.currentTarget.value })}
           >
-            <option value="">All assignees</option>
-            {assignees.map((assignee) => <option key={assignee}>{assignee}</option>)}
-          </select>
+            <NativeSelectOption value="">All assignees</NativeSelectOption>
+            {assignees.map((assignee) => <NativeSelectOption key={assignee}>{assignee}</NativeSelectOption>)}
+          </NativeSelect>
         </div>
-        <button
+        <Button
           type="button"
+          variant="ghost"
+          className="col-span-full -ml-4 justify-self-start text-muted-foreground aria-disabled:cursor-default aria-disabled:opacity-60 aria-disabled:hover:bg-transparent aria-disabled:hover:text-muted-foreground @lg:col-span-1 @lg:ml-0"
           aria-disabled={!hasFilters}
           onClick={() => {
             if (hasFilters) onFiltersChange({ ...emptyFilters });
           }}
         >
           Clear filters
-        </button>
+        </Button>
       </div>
 
-      <p className="task-board__count" role="status">
+      <p className="mt-4 mb-2 text-xs font-medium text-muted-foreground tabular-nums" role="status">
         {tasks.length} {tasks.length === 1 ? 'task' : 'tasks'}
       </p>
-      <div className="task-board__visually-hidden" role="status">{announcement}</div>
+      <div className="sr-only" role="status">{announcement}</div>
 
-      {tasks.length > 0 ? (
-        <ul className="task-board__list" role="list">
-          {tasks.map((task) => (
-            <li key={task.id}><TaskRow task={task} open={openDialog} /></li>
-          ))}
-        </ul>
-      ) : (
-        <div className="task-board__empty">
-          <h3>{hasFilters ? 'No matching tasks' : 'No tasks yet'}</h3>
-          {hasFilters && <p>Choose a different status or assignee, or clear the filters.</p>}
-        </div>
-      )}
+      <Card className="gap-0 rounded-none border-0 border-t border-border p-0 shadow-none">
+        {tasks.length > 0 ? (
+          <ul className="divide-y divide-border" role="list">
+            {tasks.map((task) => (
+              <li key={task.id}><TaskRow task={task} open={openDialog} /></li>
+            ))}
+          </ul>
+        ) : (
+          <div className="px-4 py-8 text-center">
+            <h3 className="text-sm font-semibold">{hasFilters ? 'No matching tasks' : 'No tasks yet'}</h3>
+            {hasFilters && <p className="mt-1 text-sm text-muted-foreground">Choose a different status or assignee, or clear the filters.</p>}
+          </div>
+        )}
+      </Card>
 
       {action && (
         <TaskDialog

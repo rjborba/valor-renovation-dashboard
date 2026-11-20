@@ -1,5 +1,20 @@
-import { useEffect, useId, useRef, useState, type FormEvent } from 'react';
+import { useId, useRef, useState, type FormEvent, type RefObject } from 'react';
 import { normalizeAssignees, taskStatuses, type RenovationTask, type TaskStatus } from '@valor/contracts';
+import {
+  Button,
+  Checkbox,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  Input,
+  Label,
+  NativeSelect,
+  NativeSelectOption,
+  Textarea,
+} from '@valor/ui';
 
 export type TaskAction =
   | { kind: 'add' }
@@ -8,6 +23,7 @@ export type TaskAction =
 function TaskFields({
   task,
   assignees,
+  descriptionInput,
   busy,
   save,
   cancel,
@@ -15,6 +31,7 @@ function TaskFields({
 }: {
   task?: RenovationTask;
   assignees: readonly string[];
+  descriptionInput: RefObject<HTMLTextAreaElement | null>;
   busy: boolean;
   save: (task: RenovationTask) => void;
   cancel: () => void;
@@ -26,7 +43,6 @@ function TaskFields({
   const newAssigneeId = useId();
   const assigneeErrorId = useId();
   const newId = useRef<string | null>(null);
-  const descriptionInput = useRef<HTMLTextAreaElement>(null);
   const assigneeInput = useRef<HTMLInputElement>(null);
   const [description, setDescription] = useState(task?.description ?? '');
   const [dueDate, setDueDate] = useState(task?.dueDate ?? '');
@@ -83,27 +99,27 @@ function TaskFields({
 
   return (
     <form onSubmit={submit} aria-busy={busy}>
-      <fieldset className="task-board__form-fields" disabled={busy}>
-        <div className="task-board__field">
-          <label htmlFor={descriptionId}>Description</label>
-          <textarea
+      <fieldset className="grid min-w-0 gap-3" disabled={busy}>
+        <div className="grid min-w-0 gap-1.5">
+          <Label htmlFor={descriptionId}>Description</Label>
+          <Textarea
             ref={descriptionInput}
             id={descriptionId}
+            className="field-sizing-fixed resize-y"
             rows={3}
             value={description}
             onChange={(event) => {
               event.currentTarget.setCustomValidity('');
               setDescription(event.currentTarget.value);
             }}
-            data-initial-focus
             required
           />
         </div>
 
-        <div className="task-board__form-columns">
-          <div className="task-board__field">
-            <label htmlFor={dueDateId}>Promised due date</label>
-            <input
+        <div className="grid gap-3 min-[27rem]:grid-cols-2">
+          <div className="grid min-w-0 gap-1.5">
+            <Label htmlFor={dueDateId}>Promised due date</Label>
+            <Input
               id={dueDateId}
               type="date"
               min="0001-01-01"
@@ -113,44 +129,48 @@ function TaskFields({
               required
             />
           </div>
-          <div className="task-board__field">
-            <label htmlFor={statusId}>Status</label>
-            <select
+          <div className="grid min-w-0 gap-1.5 [&>[data-slot=native-select-wrapper]]:w-full">
+            <Label htmlFor={statusId}>Status</Label>
+            <NativeSelect
               id={statusId}
               value={status}
               onChange={(event) => setStatus(event.currentTarget.value as TaskStatus)}
             >
-              {taskStatuses.map((choice) => <option key={choice}>{choice}</option>)}
-            </select>
+              {taskStatuses.map((choice) => <NativeSelectOption key={choice}>{choice}</NativeSelectOption>)}
+            </NativeSelect>
           </div>
         </div>
 
-        <fieldset className="task-board__assignees" aria-describedby={assigneeError ? assigneeErrorId : undefined}>
-          <legend>Assignees</legend>
+        <fieldset className="min-w-0 space-y-2 rounded-md border p-2.5" aria-describedby={assigneeError ? assigneeErrorId : undefined}>
+          <legend className="px-1 text-sm font-medium">Assignees</legend>
           {choices.length > 0 && (
-            <div className="task-board__assignee-options">
+            <div className="grid max-h-44 grid-cols-[repeat(auto-fit,minmax(min(100%,9rem),1fr))] gap-1.5 overflow-auto p-1">
               {choices.map((name) => (
-                <label key={name} className="task-board__choice">
-                  <input
-                    type="checkbox"
+                <Label
+                  key={name}
+                  className="min-h-9 min-w-0 cursor-pointer gap-2 rounded-md border px-2 py-1.5 has-[[data-state=checked]]:border-primary/40 has-[[data-state=checked]]:bg-accent"
+                >
+                  <Checkbox
                     checked={selected.some((assignee) => assignee.toLowerCase() === name.toLowerCase())}
-                    onChange={(event) => setAssigneeChecked(name, event.currentTarget.checked)}
+                    disabled={busy}
+                    onCheckedChange={(checked) => setAssigneeChecked(name, checked === true)}
                   />
-                  <span>{name}</span>
-                </label>
+                  <span className="min-w-0 [overflow-wrap:anywhere]">{name}</span>
+                </Label>
               ))}
             </div>
           )}
-          <div className="task-board__new-assignee">
-            <div className="task-board__field">
-              <label htmlFor={newAssigneeId}>New assignee</label>
-              <input
+          <div className="grid items-end gap-2 min-[27rem]:grid-cols-[minmax(0,1fr)_auto]">
+            <div className="grid min-w-0 gap-1.5">
+              <Label htmlFor={newAssigneeId}>New assignee</Label>
+              <Input
                 ref={assigneeInput}
                 id={newAssigneeId}
                 type="text"
                 placeholder="Name or trade"
                 value={newAssignee}
                 aria-describedby={assigneeError ? assigneeErrorId : undefined}
+                aria-invalid={assigneeError || undefined}
                 onChange={(event) => {
                   setNewAssignee(event.currentTarget.value);
                   setAssigneeError(false);
@@ -163,19 +183,21 @@ function TaskFields({
                 }}
               />
             </div>
-            <button type="button" disabled={!newAssignee.trim()} onClick={addAssignee}>Add assignee</button>
+            <Button type="button" variant="outline" className="justify-self-start" disabled={!newAssignee.trim()} onClick={addAssignee}>
+              Add assignee
+            </Button>
           </div>
-          {assigneeError && <p id={assigneeErrorId} className="task-board__error" role="alert">Choose or add at least one assignee.</p>}
+          {assigneeError && <p id={assigneeErrorId} className="text-sm text-destructive" role="alert">Choose or add at least one assignee.</p>}
         </fieldset>
       </fieldset>
 
-      {error && <p className="task-board__error" role="alert">{error}</p>}
-      <div className="task-board__dialog-actions">
-        <button type="button" onClick={cancel} disabled={busy}>Cancel</button>
-        <button type="submit" className="task-board__primary" disabled={busy}>
+      {error && <p className="mt-3 text-sm text-destructive" role="alert">{error}</p>}
+      <DialogFooter className="mt-4 flex-row flex-wrap justify-end border-t pt-3">
+        <Button type="button" variant="outline" onClick={cancel} disabled={busy}>Cancel</Button>
+        <Button type="submit" disabled={busy}>
           {busy ? 'Saving task…' : task ? 'Save changes' : 'Add task'}
-        </button>
-      </div>
+        </Button>
+      </DialogFooter>
     </form>
   );
 }
@@ -195,21 +217,13 @@ export default function TaskDialog({
   removeTask: (id: string) => Promise<void>;
   close: (message?: string) => void;
 }) {
-  const headingId = useId();
-  const confirmationId = useId();
-  const dialogRef = useRef<HTMLDialogElement>(null);
+  const descriptionInput = useRef<HTMLTextAreaElement>(null);
+  const cancelButton = useRef<HTMLButtonElement>(null);
   const pending = useRef(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const kind = action.kind;
   const title = kind === 'delete' ? 'Delete task' : kind === 'edit' ? 'Edit task' : 'Add task';
-
-  useEffect(() => {
-    const dialog = dialogRef.current!;
-    dialog.showModal();
-    dialog.querySelector<HTMLElement>('[data-initial-focus]')?.focus();
-    return () => dialog.close();
-  }, []);
 
   function cancel() {
     if (!pending.current) close();
@@ -233,46 +247,56 @@ export default function TaskDialog({
   }
 
   return (
-    <dialog
-      ref={dialogRef}
-      className="task-board__dialog"
-      aria-labelledby={headingId}
-      aria-describedby={kind === 'delete' ? confirmationId : undefined}
-      onCancel={(event) => {
-        event.preventDefault();
-        cancel();
-      }}
-    >
-      <h3 id={headingId}>{title}</h3>
-      {kind === 'delete' ? (
-        <div aria-busy={busy}>
-          <p id={confirmationId}>Permanently delete “{action.task.description}”?</p>
-          {error && <p className="task-board__error" role="alert">{error}</p>}
-          <div className="task-board__dialog-actions">
-            <button type="button" disabled={busy} data-initial-focus onClick={cancel}>Cancel</button>
-            <button
-              type="button"
-              className="task-board__danger"
-              disabled={busy}
-              onClick={() => void submit(() => removeTask(action.task.id), 'Task deleted.')}
-            >
-              {busy ? 'Deleting task…' : 'Delete task'}
-            </button>
+    <Dialog open onOpenChange={(open) => { if (!open) cancel(); }}>
+      <DialogContent
+        className="max-h-[calc(100dvh-1.5rem)] gap-3 overflow-x-hidden overflow-y-auto overscroll-contain bg-card p-4 sm:p-5"
+        showCloseButton={false}
+        {...(kind === 'delete' ? {} : { 'aria-describedby': undefined })}
+        onOpenAutoFocus={(event) => {
+          event.preventDefault();
+          (kind === 'delete' ? cancelButton.current : descriptionInput.current)?.focus();
+        }}
+        onCloseAutoFocus={(event) => event.preventDefault()}
+        onInteractOutside={(event) => event.preventDefault()}
+      >
+        <DialogHeader className="text-left">
+          <DialogTitle asChild><h3>{title}</h3></DialogTitle>
+          {kind === 'delete' && (
+            <DialogDescription className="[overflow-wrap:anywhere]">
+              Permanently delete “{action.task.description}”?
+            </DialogDescription>
+          )}
+        </DialogHeader>
+        {kind === 'delete' ? (
+          <div aria-busy={busy}>
+            {error && <p className="mb-3 text-sm text-destructive" role="alert">{error}</p>}
+            <DialogFooter className="flex-row flex-wrap justify-end border-t pt-3">
+              <Button ref={cancelButton} type="button" variant="outline" disabled={busy} onClick={cancel}>Cancel</Button>
+              <Button
+                type="button"
+                variant="destructive"
+                disabled={busy}
+                onClick={() => void submit(() => removeTask(action.task.id), 'Task deleted.')}
+              >
+                {busy ? 'Deleting task…' : 'Delete task'}
+              </Button>
+            </DialogFooter>
           </div>
-        </div>
-      ) : (
-        <TaskFields
-          task={kind === 'edit' ? action.task : undefined}
-          assignees={assignees}
-          busy={busy}
-          error={error}
-          cancel={cancel}
-          save={(task) => {
-            if (kind === 'edit') void submit(() => updateTask(task), 'Task updated.');
-            else void submit(() => addTask(task), 'Task added.');
-          }}
-        />
-      )}
-    </dialog>
+        ) : (
+          <TaskFields
+            task={kind === 'edit' ? action.task : undefined}
+            assignees={assignees}
+            descriptionInput={descriptionInput}
+            busy={busy}
+            error={error}
+            cancel={cancel}
+            save={(task) => {
+              if (kind === 'edit') void submit(() => updateTask(task), 'Task updated.');
+              else void submit(() => addTask(task), 'Task added.');
+            }}
+          />
+        )}
+      </DialogContent>
+    </Dialog>
   );
 }

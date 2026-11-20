@@ -16,11 +16,14 @@ test('loads both independent modules over HTTP and stacks them on mobile', async
     const frame = page.getByRole('group', { name: `Federated module ${moduleId}`, exact: true });
     await expect(frame.getByRole('heading', { name: heading, exact: true })).toBeVisible();
   }
+  // Each remote loads CSS. Its base utilities must respect the shell's desktop breakpoint.
+  await expect(page.getByRole('main')).toHaveCSS('padding-left', '48px');
   const tasksBox = (await board(page).boundingBox())!;
   const reportsBox = (await reports(page).boundingBox())!;
   expect(reportsBox.x).toBeGreaterThanOrEqual(tasksBox.x + tasksBox.width);
 
   await page.setViewportSize({ width: 375, height: 812 });
+  await expect(page.getByRole('main')).toHaveCSS('padding-left', '16px');
   const mobileTasks = (await board(page).boundingBox())!;
   const mobileReports = (await reports(page).boundingBox())!;
   expect(mobileReports.x).toBeCloseTo(mobileTasks.x);
