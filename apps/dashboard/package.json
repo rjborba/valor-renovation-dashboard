@@ -1,0 +1,19 @@
+{
+  "name": "dashboard",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "rspack serve --mode development",
+    "build:local": "rspack build --mode production",
+    "deploy": "rspack build --mode production --env zephyr"
+  },
+  "dependencies": {
+    "@valor/contracts": "1.0.0",
+    "react": "19.3.1",
+    "react-dom": "19.3.1"
+  },
+  "zephyr:dependencies": {
+    "expenses": "workspace:*",
+    "reports": "workspace:*"
+  }
+}

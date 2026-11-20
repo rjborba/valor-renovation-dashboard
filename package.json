@@ -1,0 +1,39 @@
+{
+  "name": "valor",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "concurrently --kill-others --names dashboard,expenses,reports \"npm run dev:dashboard\" \"npm run dev:expenses\" \"npm run dev:reports\"",
+    "dev:dashboard": "npm run dev --workspace dashboard",
+    "dev:expenses": "npm run dev --workspace expenses",
+    "dev:reports": "npm run dev --workspace reports",
+    "build:local": "npm run build:local --workspaces --if-present",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "tsx --test \"packages/**/*.test.ts\" \"apps/**/*.test.ts\" \"tests/**/*.test.ts\"",
+    "deploy:expenses": "npm run deploy --workspace expenses",
+    "deploy:reports": "npm run deploy --workspace reports",
+    "deploy:dashboard": "npm run deploy --workspace dashboard",
+    "deploy": "npm run deploy:expenses && npm run deploy:reports && npm run deploy:dashboard"
+  },
+  "devDependencies": {
+    "@module-federation/enhanced": "2.9.3",
+    "@playwright/test": "1.65.1",
+    "@rspack/cli": "2.3.3",
+    "@rspack/core": "2.3.3",
+    "@rspack/dev-server": "2.2.2",
+    "@types/node": "^24.0.0",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "concurrently": "10.0.7",
+    "tsx": "4.23.15",
+    "typescript": "6.0.3",
+    "zephyr-rspack-plugin": "1.8.0"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  }
+}

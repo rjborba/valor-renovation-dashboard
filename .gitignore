@@ -1,0 +1,14 @@
+node_modules/
+dist/
+.rspack-cache/
+.cache/
+.mf/
+@mf-types/
+.zephyr/
+*.tsbuildinfo
+playwright-report/
+test-results/
+.env
+.env.*
+!.env.example
+.DS_Store
