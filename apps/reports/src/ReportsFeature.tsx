@@ -13,6 +13,7 @@ export default function ReportsFeature({ purchases }: ReportsFeatureProps) {
   const metrics = [
     { label: 'Total paid', value: formatBRL(totalPaidCents) },
     { label: 'Purchases', value: formatCount.format(purchaseCount) },
+    { label: 'Average purchase', value: formatBRL(purchaseCount ? Math.round(totalPaidCents / purchaseCount) : 0) },
   ];
 
   const minPaidCents = Math.min(0, rooms[rooms.length - 1]?.paidCents ?? 0);
