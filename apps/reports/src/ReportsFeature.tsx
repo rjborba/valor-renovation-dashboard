@@ -71,8 +71,8 @@ export default function ReportsFeature({ tasks }: ReportsFeatureProps) {
   return (
     <section className="min-w-0" aria-labelledby={headingId}>
       <Card className="rounded-none border-0 bg-transparent py-0 shadow-none">
-        <CardContent className="grid gap-4 p-4">
-          <h2 id={headingId} className="m-0 text-base font-semibold tracking-tight">Commitment progress</h2>
+        <CardContent className="grid items-center gap-x-8 gap-y-3 p-4 md:grid-cols-[minmax(12rem,1fr)_minmax(0,1.4fr)_minmax(10rem,1fr)]">
+          <h2 id={headingId} className="m-0 text-base font-semibold tracking-tight">Task summary</h2>
 
           <div className="grid gap-2">
             <div className="flex flex-wrap items-baseline justify-between gap-x-2 gap-y-1">
@@ -93,7 +93,7 @@ export default function ReportsFeature({ tasks }: ReportsFeatureProps) {
             </p>
           </div>
 
-          <dl className="m-0 grid grid-cols-3 gap-2 border-t border-border pt-3" aria-label="Task counts by status">
+          <dl className="m-0 grid grid-cols-3 gap-2 border-t border-border pt-3 md:border-t-0 md:border-l md:pt-0 md:pl-6" aria-label="Task counts by status">
             {taskStatuses.map(status => (
               <div key={status} className="flex min-w-0 flex-col justify-between gap-1">
                 <dt><TaskStatusSymbol status={status} /></dt>
@@ -103,19 +103,23 @@ export default function ReportsFeature({ tasks }: ReportsFeatureProps) {
           </dl>
 
           {total === 0 ? (
-            <p className="m-0 border-t border-border pt-3 text-sm text-muted-foreground">No commitments to show.</p>
+            <p className="col-span-full m-0 border-t border-border pt-3 text-sm text-muted-foreground">No commitments to show.</p>
           ) : (
-            <div className="grid gap-3 border-t border-border pt-3">
-              <h3 className="m-0 text-sm font-semibold">Promised due dates</h3>
-              {overdue.length === 0 && upcoming.length === 0 ? (
-                <p className="m-0 text-sm text-muted-foreground">No outstanding deadlines.</p>
-              ) : (
-                <>
-                  <DeadlineList label="Overdue" tasks={overdue} today={today} />
-                  <DeadlineList label="Upcoming" tasks={upcoming} today={today} />
-                </>
-              )}
-            </div>
+            <details className="col-span-full border-t border-border pt-2">
+              <summary className="w-fit cursor-pointer rounded-sm text-xs font-medium text-muted-foreground focus-visible:outline-ring">
+                Promised due dates ({overdue.length + upcoming.length})
+              </summary>
+              <div className="mt-3 grid gap-4 sm:grid-cols-2">
+                {overdue.length === 0 && upcoming.length === 0 ? (
+                  <p className="m-0 text-sm text-muted-foreground">No outstanding deadlines.</p>
+                ) : (
+                  <>
+                    <DeadlineList label="Overdue" tasks={overdue} today={today} />
+                    <DeadlineList label="Upcoming" tasks={upcoming} today={today} />
+                  </>
+                )}
+              </div>
+            </details>
           )}
         </CardContent>
       </Card>

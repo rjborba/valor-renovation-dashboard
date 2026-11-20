@@ -37,6 +37,7 @@ test('creates, edits and deletes a shared task, persisting its owners, status an
   await page.keyboard.press('Escape');
   await expect(page.getByRole('tooltip')).toHaveCount(0);
   await expectProgress(page, 0, 1);
+  await reports(page).getByText(/Promised due dates/).click();
   await expect(reports(page).getByText(description, { exact: true })).toBeVisible();
   const [created] = JSON.parse((await readStorage(page))!);
   expect(created).toMatchObject({ description, dueDate: '2027-04-10', status: 'In progress' });

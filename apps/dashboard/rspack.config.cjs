@@ -7,6 +7,7 @@ module.exports = (env) => {
     shareStrategy: 'loaded-first',
     remotes: {
       tasks: `tasks@http://localhost:${port + 1}/mf-manifest.json`,
+      filters: `filters@http://localhost:${port + 3}/mf-manifest.json`,
       reports: `reports@http://localhost:${port + 2}/mf-manifest.json`,
     },
   })(env);

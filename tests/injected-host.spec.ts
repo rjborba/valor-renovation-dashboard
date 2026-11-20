@@ -24,7 +24,7 @@ test('the real dashboard and remotes read and mutate an injected in-memory repos
     const name = basename(new URL(route.request().url()).pathname);
     return route.fulfill({ path: join(output, name) });
   });
-  // Keep the host document on loopback and load both real remote containers.
+  // Keep the host document on loopback and load the real remote containers.
   await page.route('/main.js', route => route.fulfill({ path: join(output, 'main.js') }));
   await page.goto('/');
   const row = board(page).getByRole('article', { name: 'Inspect the injected board' });

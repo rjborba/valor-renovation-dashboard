@@ -18,10 +18,15 @@ export interface ReportsFeatureProps {
   tasks: readonly RenovationTask[];
 }
 
-export interface TasksFeatureProps extends ReportsFeatureProps {
+export interface FiltersFeatureProps {
   assignees: readonly string[];
   filters: TaskFilters;
   onFiltersChange(filters: TaskFilters): void;
+}
+
+export interface TasksFeatureProps extends ReportsFeatureProps {
+  assignees: readonly string[];
+  filters: TaskFilters;
   onAddTask(task: RenovationTask): Promise<void>;
   onUpdateTask(task: RenovationTask): Promise<void>;
   onRemoveTask(id: string): Promise<void>;

@@ -1,7 +1,7 @@
 @import "tailwindcss" source(none);
 @import "tw-animate-css";
 
-/* All three stylesheets need the same utility order when a remote loads last. */
+/* All app stylesheets need the same utility order when a remote loads last. */
 @source "../../../apps/*/src/**/*.{ts,tsx,html}";
 @source "./components";
 @source "../../task-board/src";

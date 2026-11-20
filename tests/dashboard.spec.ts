@@ -1,9 +1,9 @@
 import { expect, test } from '@playwright/test';
-import { reportsOrigin, tasksOrigin } from './servers';
-import { board, expectProgress, reports } from './task-ui';
+import { filtersOrigin, reportsOrigin, tasksOrigin } from './servers';
+import { board, expectProgress, filtersPanel, reports } from './task-ui';
 
-test('loads both independent modules over HTTP and stacks them on mobile', async ({ page }) => {
-  const assets = [tasksOrigin, reportsOrigin].flatMap(origin =>
+test('loads three independent remotes and places the summary above filters and tasks', async ({ page }) => {
+  const assets = [tasksOrigin, reportsOrigin, filtersOrigin].flatMap(origin =>
     ['mf-manifest.json', 'remoteEntry.js'].map(file =>
       page.waitForResponse(response => response.url() === `${origin}/${file}` && response.ok()),
     ),
@@ -11,7 +11,8 @@ test('loads both independent modules over HTTP and stacks them on mobile', async
   await Promise.all([page.goto('/'), ...assets]);
   for (const [moduleId, heading] of [
     ['tasks/TasksFeature', 'Task board'],
-    ['reports/ReportsFeature', 'Commitment progress'],
+    ['reports/ReportsFeature', 'Task summary'],
+    ['filters/FiltersFeature', 'Task filters'],
   ]) {
     const frame = page.getByRole('group', { name: `Federated module ${moduleId}`, exact: true });
     await expect(frame.getByRole('heading', { name: heading, exact: true })).toBeVisible();
@@ -20,26 +21,32 @@ test('loads both independent modules over HTTP and stacks them on mobile', async
   await expect(page.getByRole('main')).toHaveCSS('padding-left', '48px');
   const tasksBox = (await board(page).boundingBox())!;
   const reportsBox = (await reports(page).boundingBox())!;
-  expect(reportsBox.x).toBeGreaterThanOrEqual(tasksBox.x + tasksBox.width);
+  const filtersBox = (await filtersPanel(page).boundingBox())!;
+  expect(filtersBox.x).toBeGreaterThanOrEqual(tasksBox.x + tasksBox.width);
+  expect(reportsBox.y + reportsBox.height).toBeLessThanOrEqual(Math.min(filtersBox.y, tasksBox.y));
+  expect(reportsBox.width).toBeGreaterThan(tasksBox.width + filtersBox.width);
 
   await page.setViewportSize({ width: 375, height: 812 });
   await expect(page.getByRole('main')).toHaveCSS('padding-left', '16px');
   const mobileTasks = (await board(page).boundingBox())!;
   const mobileReports = (await reports(page).boundingBox())!;
   expect(mobileReports.x).toBeCloseTo(mobileTasks.x);
-  expect(mobileReports.y).toBeGreaterThanOrEqual(mobileTasks.y + mobileTasks.height);
+  const mobileFilters = (await filtersPanel(page).boundingBox())!;
+  expect(mobileFilters.y).toBeGreaterThanOrEqual(mobileReports.y + mobileReports.height);
+  expect(mobileTasks.y).toBeGreaterThanOrEqual(mobileFilters.y + mobileFilters.height);
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(375);
 });
 
 test('status and assignee intersect across the board and summary, including an empty result', async ({ page }) => {
   await page.clock.setFixedTime(new Date('2026-11-24T12:00:00Z'));
   await page.goto('/');
-  const filters = board(page).getByRole('group', { name: 'Task filters' });
+  const filters = filtersPanel(page);
   const status = filters.getByRole('combobox', { name: 'Status', exact: true });
   const assignee = filters.getByRole('combobox', { name: 'Assignee', exact: true });
   await expectProgress(page, 1, 5);
   const counts = reports(page).getByLabel('Task counts by status');
   await expect(counts.getByRole('definition')).toHaveText(['2', '2', '1']);
+  await reports(page).getByText(/Promised due dates/).click();
   const overdue = reports(page).getByRole('list', { name: 'Overdue' });
   await expect(overdue.getByRole('listitem')).toHaveCount(1);
   await expect(overdue.locator('time')).toHaveAttribute('datetime', '2026-11-23');
@@ -63,7 +70,7 @@ test('status and assignee intersect across the board and summary, including an e
   await assignee.selectOption({ label: 'Engineer' });
   await expect(board(page).getByRole('article')).toHaveCount(0);
   await expectProgress(page, 0, 0);
-  await board(page).getByRole('button', { name: 'Clear filters' }).click();
+  await filtersPanel(page).getByRole('button', { name: 'Clear filters' }).click();
   await expect(board(page).getByRole('article')).toHaveCount(5);
   await expectProgress(page, 1, 5);
 });
@@ -74,8 +81,8 @@ test('retries a missing Reports manifest and keeps the chosen task filters', asy
   await page.goto('/');
   const retry = page.getByRole('alert').getByRole('button', { name: 'Retry Reports' });
   await expect(retry).toBeVisible();
-  const status = board(page).getByRole('combobox', { name: 'Status', exact: true });
-  const assignee = board(page).getByRole('combobox', { name: 'Assignee', exact: true });
+  const status = filtersPanel(page).getByRole('combobox', { name: 'Status', exact: true });
+  const assignee = filtersPanel(page).getByRole('combobox', { name: 'Assignee', exact: true });
   await status.click();
   await page.getByRole('option', { name: 'In progress', exact: true }).click();
   await assignee.selectOption('Electrician');
@@ -113,9 +120,29 @@ test('recovers the Tasks entry while Reports continues serving the saved board',
   await expect(retry).toHaveCount(0);
 });
 
+test('retries Filters independently while Tasks and Reports remain usable', async ({ page }) => {
+  const url = `${filtersOrigin}/mf-manifest.json`;
+  await page.route(url, route => route.abort('connectionfailed'));
+  await page.goto('/');
+  const retry = page.getByRole('button', { name: 'Retry Filters' });
+  await expect(retry).toBeVisible();
+  await expect(board(page).getByRole('article')).toHaveCount(5);
+  await expectProgress(page, 1, 5);
+  await page.unroute(url);
+  await retry.click();
+  await filtersPanel(page).getByRole('combobox', { name: 'Assignee' }).selectOption('Engineer');
+  await expect(board(page).getByRole('article')).toHaveCount(1);
+  await expectProgress(page, 0, 1);
+});
+
 test('each remote renders directly with its own standalone wrapper', async ({ page }) => {
   await page.goto(tasksOrigin);
   await expect(board(page).getByRole('article')).toHaveCount(5);
   await page.goto(reportsOrigin);
   await expectProgress(page, 1, 5);
+  await page.goto(filtersOrigin);
+  const assignee = filtersPanel(page).getByRole('combobox', { name: 'Assignee' });
+  await assignee.selectOption('Engineer');
+  await filtersPanel(page).getByRole('button', { name: 'Clear filters' }).click();
+  await expect(assignee).toHaveValue('');
 });

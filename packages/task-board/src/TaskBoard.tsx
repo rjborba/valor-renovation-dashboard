@@ -3,6 +3,7 @@ import {
   emptyFilters,
   filterTasks,
   normalizeAssignees,
+  type FiltersFeatureProps,
   type RenovationTask,
   type TasksFeatureProps,
 } from '@valor/contracts';
@@ -14,7 +15,7 @@ export function TaskBoard({
   children,
 }: {
   repository?: TaskRepository;
-  children: (board: TasksFeatureProps) => ReactNode;
+  children: (board: TasksFeatureProps & FiltersFeatureProps) => ReactNode;
 }) {
   const [records, setRecords] = useState<readonly RenovationTask[] | null>(null);
   const [filters, setFilters] = useState(emptyFilters);

@@ -1,5 +1,5 @@
 import { defineConfig } from '@playwright/test';
-import { dashboardOrigin, dashboardPort, reportsOrigin, tasksOrigin } from './tests/servers';
+import { dashboardOrigin, dashboardPort, filtersOrigin, reportsOrigin, tasksOrigin } from './tests/servers';
 
 export default defineConfig({
   testDir: './tests',
@@ -15,6 +15,10 @@ export default defineConfig({
     {
       command: `npm run dev -w reports -- --port ${dashboardPort + 2}`,
       url: `${reportsOrigin}/mf-manifest.json`,
+    },
+    {
+      command: `npm run dev -w filters -- --port ${dashboardPort + 3}`,
+      url: `${filtersOrigin}/mf-manifest.json`,
     },
   ],
   use: {

@@ -15,6 +15,7 @@ import '@valor/ui/styles.css';
 
 const loadTasks = () => import('tasks/TasksFeature');
 const loadReports = () => import('reports/ReportsFeature');
+const loadFilters = () => import('filters/FiltersFeature');
 
 class FeatureBoundary extends Component<
   { name: string; retry: () => void; children: ReactNode },
@@ -40,6 +41,7 @@ class FeatureBoundary extends Component<
 
 const moduleColors = {
   Tasks: { border: 'border-indigo-500', label: 'bg-indigo-50 text-indigo-800' },
+  Filters: { border: 'border-amber-500', label: 'bg-amber-50 text-amber-900' },
   Reports: { border: 'border-teal-600', label: 'bg-teal-50 text-teal-800' },
 };
 
@@ -49,7 +51,7 @@ function RemoteFeature<P extends object>({
   load,
   featureProps,
 }: {
-  name: 'Tasks' | 'Reports';
+  name: keyof typeof moduleColors;
   moduleId: string;
   load: () => Promise<{ default: ComponentType<P> }>;
   featureProps: P;
@@ -120,7 +122,27 @@ export default function App({
         <TaskBoard repository={repository}>
           {(board) => (
             <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(280px,0.42fr)]">
-              <div className="min-w-0">
+              <div className="min-w-0 lg:col-span-2">
+                <RemoteFeature
+                  name="Reports"
+                  moduleId="reports/ReportsFeature"
+                  load={loadReports}
+                  featureProps={{ tasks: board.tasks }}
+                />
+              </div>
+              <aside className="min-w-0 lg:col-start-2 lg:row-start-2">
+                <RemoteFeature
+                  name="Filters"
+                  moduleId="filters/FiltersFeature"
+                  load={loadFilters}
+                  featureProps={{
+                    assignees: board.assignees,
+                    filters: board.filters,
+                    onFiltersChange: board.onFiltersChange,
+                  }}
+                />
+              </aside>
+              <div className="min-w-0 lg:col-start-1 lg:row-start-2">
                 <RemoteFeature
                   name="Tasks"
                   moduleId="tasks/TasksFeature"
@@ -128,14 +150,6 @@ export default function App({
                   featureProps={board}
                 />
               </div>
-              <aside className="min-w-0">
-                <RemoteFeature
-                  name="Reports"
-                  moduleId="reports/ReportsFeature"
-                  load={loadReports}
-                  featureProps={{ tasks: board.tasks }}
-                />
-              </aside>
             </div>
           )}
         </TaskBoard>

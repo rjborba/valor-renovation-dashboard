@@ -1,11 +1,10 @@
 import { useId, useRef, useState } from 'react';
 import {
-  emptyFilters,
   type RenovationTask,
   type TaskStatus,
   type TasksFeatureProps,
 } from '@valor/contracts';
-import { Badge, Button, Card, Label, NativeSelect, NativeSelectOption, TaskStatusFilter, TaskStatusMenu } from '@valor/ui';
+import { Badge, Button, Card, TaskStatusMenu } from '@valor/ui';
 import '@valor/ui/styles.css';
 import TaskDialog, { type TaskAction } from './TaskDialog';
 
@@ -102,14 +101,11 @@ export default function TasksFeature({
   tasks,
   assignees,
   filters,
-  onFiltersChange,
   onAddTask,
   onUpdateTask,
   onRemoveTask,
 }: TasksFeatureProps) {
   const headingId = useId();
-  const statusId = useId();
-  const assigneeId = useId();
   const addButton = useRef<HTMLButtonElement>(null);
   const trigger = useRef<HTMLButtonElement>(null);
   const [action, setAction] = useState<TaskAction | null>(null);
@@ -143,44 +139,6 @@ export default function TasksFeature({
           Add task
         </Button>
       </header>
-
-      <div
-        className="mt-4 grid grid-cols-1 items-end gap-x-3 gap-y-2 @3xs:grid-cols-2 @lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]"
-        role="group"
-        aria-label="Task filters"
-      >
-        <div className="grid min-w-0 gap-1.5">
-          <Label htmlFor={statusId} className="text-xs text-muted-foreground">Status</Label>
-          <TaskStatusFilter
-            id={statusId}
-            status={filters.status}
-            onChange={status => onFiltersChange({ ...filters, status })}
-          />
-        </div>
-        <div className="grid min-w-0 gap-1.5 [&>[data-slot=native-select-wrapper]]:w-full">
-          <Label htmlFor={assigneeId} className="text-xs text-muted-foreground">Assignee</Label>
-          <NativeSelect
-            id={assigneeId}
-            className="h-9 w-full min-w-0 bg-card"
-            value={filters.assignee}
-            onChange={(event) => onFiltersChange({ ...filters, assignee: event.currentTarget.value })}
-          >
-            <NativeSelectOption value="">All assignees</NativeSelectOption>
-            {assignees.map((assignee) => <NativeSelectOption key={assignee}>{assignee}</NativeSelectOption>)}
-          </NativeSelect>
-        </div>
-        <Button
-          type="button"
-          variant="ghost"
-          className="col-span-full justify-self-start px-0 text-muted-foreground aria-disabled:cursor-default aria-disabled:opacity-60 aria-disabled:hover:bg-transparent aria-disabled:hover:text-muted-foreground @lg:col-span-1 @lg:px-3"
-          aria-disabled={!hasFilters}
-          onClick={() => {
-            if (hasFilters) onFiltersChange({ ...emptyFilters });
-          }}
-        >
-          Clear filters
-        </Button>
-      </div>
 
       <p className="mt-4 mb-2 text-xs font-medium text-muted-foreground tabular-nums" role="status">
         {tasks.length} {tasks.length === 1 ? 'task' : 'tasks'}
