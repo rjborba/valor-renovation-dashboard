@@ -91,19 +91,13 @@ export default function App() {
             <i aria-hidden="true" />
             Field Ledger
           </span>
-          <span className="project-name">
-            Casa Oliva <span> / </span> Recife, BR
-          </span>
         </div>
       </header>
       <main id="overview" className="shell">
         <div className="intro">
-          <div>
-            <p className="dateline">Casa Oliva renovation</p>
-            <h1>
-              Renovation spending<span>.</span>
-            </h1>
-          </div>
+          <h1>
+            Renovation tracker<span>.</span>
+          </h1>
           <p className="period">
             <span>Reporting period</span>November 2026
           </p>
@@ -135,7 +129,7 @@ export default function App() {
       </main>
       <footer className="shell">
         <span>Field Ledger</span>
-        <span>Fictional project · Brazilian reais (BRL)</span>
+        <span>Sample purchases · Brazilian reais (BRL)</span>
       </footer>
     </>
   );

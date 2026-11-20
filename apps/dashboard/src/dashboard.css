@@ -53,14 +53,9 @@ select {
   );
   transform: rotate(-5deg);
 }
-.project-name,
 .period {
   font-size: 13px;
   font-weight: 600;
-}
-.project-name span {
-  padding: 0 7px;
-  color: #c1a06d;
 }
 .intro {
   display: flex;
@@ -69,16 +64,12 @@ select {
   gap: 20px;
   padding: clamp(35px, 5vw, 76px) 0 35px;
 }
-.dateline,
 .period span {
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.14em;
   color: #526a60;
-}
-.dateline {
-  margin: 0 0 11px;
 }
 h1 {
   font:
@@ -174,9 +165,6 @@ footer span:first-child {
   .period span {
     display: inline;
     margin-right: 8px;
-  }
-  .project-name {
-    font-size: 11px;
   }
   .wordmark {
     font-size: 20px;
