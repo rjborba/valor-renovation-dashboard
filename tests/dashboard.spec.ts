@@ -132,6 +132,23 @@ test('retries Filters independently while Tasks and Reports remain usable', asyn
 test('each remote renders directly with its own standalone wrapper', async ({ page }) => {
   await page.goto(tasksOrigin);
   await expect(board(page).getByRole('article')).toHaveCount(5);
+  // A standalone Tasks app can open both dialogs using only its own origin.
+  const requests: string[] = [];
+  await page.route('**/*', route => {
+    if (new URL(route.request().url()).origin === tasksOrigin) return route.continue();
+    requests.push(route.request().url());
+    return route.abort();
+  });
+  const add = board(page).getByRole('button', { name: 'Add task' });
+  await add.click();
+  await expect(page.getByRole('dialog', { name: 'Add task' }).getByLabel('Description')).toBeFocused();
+  await page.keyboard.press('Escape');
+  await expect(add).toBeFocused();
+  await board(page).getByRole('button', { name: /^Edit task:/ }).first().click();
+  await expect(page.getByRole('dialog', { name: 'Edit task' }).getByLabel('Description')).toBeFocused();
+  await page.keyboard.press('Escape');
+  expect(requests).toEqual([]);
+  await page.unroute('**/*');
   await page.goto(reportsOrigin);
   await expectProgress(page, 1, 5);
   await page.goto(filtersOrigin);

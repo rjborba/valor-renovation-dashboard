@@ -7,9 +7,6 @@
     "build:local": "rspack build --mode production",
     "deploy": "rspack build --mode production --env zephyr"
   },
-  "zephyr:dependencies": {
-    "editor": "workspace:*"
-  },
   "dependencies": {
     "@valor/contracts": "1.0.0",
     "@valor/task-board": "1.0.0",

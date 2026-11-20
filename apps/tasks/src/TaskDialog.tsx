@@ -1,10 +1,11 @@
 import { useId, useRef, useState, type FormEvent, type RefObject } from 'react';
-import { localDateKey, normalizeAssignees, taskStatuses, type RenovationTask, type TaskStatus, type TaskEditorProps } from '@valor/contracts';
+import { localDateKey, normalizeAssignees, taskStatuses, type RenovationTask, type TaskStatus } from '@valor/contracts';
 import {
   Button,
   Checkbox,
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -14,7 +15,10 @@ import {
   NativeSelectOption,
   Textarea,
 } from '@valor/ui';
-import '@valor/ui/styles.css';
+
+export type TaskAction =
+  | { kind: 'add' }
+  | { kind: 'edit' | 'delete'; task: RenovationTask };
 
 function TaskFields({
   task,
@@ -198,26 +202,45 @@ function TaskFields({
   );
 }
 
-export default function TaskEditor({ task, assignees, onSave, onClose }: TaskEditorProps) {
+export default function TaskDialog({
+  action,
+  assignees,
+  addTask,
+  updateTask,
+  removeTask,
+  close,
+}: {
+  action: TaskAction;
+  assignees: readonly string[];
+  addTask: (task: RenovationTask) => Promise<void>;
+  updateTask: (task: RenovationTask) => Promise<void>;
+  removeTask: (id: string) => Promise<void>;
+  close: (message?: string) => void;
+}) {
   const descriptionInput = useRef<HTMLTextAreaElement>(null);
+  const cancelButton = useRef<HTMLButtonElement>(null);
   const pending = useRef(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const kind = action.kind;
+  const title = kind === 'delete' ? 'Delete task' : kind === 'edit' ? 'Edit task' : 'Add task';
 
   function cancel() {
-    if (!pending.current) onClose();
+    if (!pending.current) close();
   }
 
-  async function save(draft: RenovationTask) {
+  async function submit(change: () => Promise<void>, message: string) {
     if (pending.current) return;
     pending.current = true;
     setBusy(true);
     setError('');
     try {
-      await onSave(draft);
-      onClose(task ? 'Task updated.' : 'Task added.');
+      await change();
+      close(message);
     } catch {
-      setError('The task could not be saved. Try again.');
+      setError(kind === 'delete'
+        ? 'The task could not be deleted. Try again.'
+        : 'The task could not be saved. Try again.');
       pending.current = false;
       setBusy(false);
     }
@@ -226,21 +249,53 @@ export default function TaskEditor({ task, assignees, onSave, onClose }: TaskEdi
   return (
     <Dialog open onOpenChange={(open) => { if (!open) cancel(); }}>
       <DialogContent
-        className="max-h-[calc(100dvh-1.5rem)] gap-3 overflow-x-hidden overflow-y-auto overscroll-contain border-2 border-pink-600 bg-card p-4 sm:p-5"
+        className="max-h-[calc(100dvh-1.5rem)] gap-3 overflow-x-hidden overflow-y-auto overscroll-contain bg-card p-4 sm:p-5"
         showCloseButton={false}
-        aria-describedby={undefined}
-        onOpenAutoFocus={event => { event.preventDefault(); descriptionInput.current?.focus(); }}
-        onCloseAutoFocus={event => event.preventDefault()}
-        onInteractOutside={event => event.preventDefault()}
+        {...(kind === 'delete' ? {} : { 'aria-describedby': undefined })}
+        onOpenAutoFocus={(event) => {
+          event.preventDefault();
+          (kind === 'delete' ? cancelButton.current : descriptionInput.current)?.focus();
+        }}
+        onCloseAutoFocus={(event) => event.preventDefault()}
+        onInteractOutside={(event) => event.preventDefault()}
       >
         <DialogHeader className="text-left">
-          <span className="w-fit rounded bg-pink-50 px-2 py-1 text-[11px] text-pink-800">
-            Federated module <code>editor/TaskEditor</code>
-          </span>
-          <DialogTitle asChild><h3>{task ? 'Edit task' : 'Add task'}</h3></DialogTitle>
+          <DialogTitle asChild><h3>{title}</h3></DialogTitle>
+          {kind === 'delete' && (
+            <DialogDescription className="[overflow-wrap:anywhere]">
+              Permanently delete “{action.task.description}”?
+            </DialogDescription>
+          )}
         </DialogHeader>
-        <TaskFields task={task} assignees={assignees} descriptionInput={descriptionInput}
-          busy={busy} error={error} cancel={cancel} save={save} />
+        {kind === 'delete' ? (
+          <div aria-busy={busy}>
+            {error && <p className="mb-3 text-sm text-destructive" role="alert">{error}</p>}
+            <DialogFooter className="flex-row flex-wrap justify-end border-t pt-3">
+              <Button ref={cancelButton} type="button" variant="outline" disabled={busy} onClick={cancel}>Cancel</Button>
+              <Button
+                type="button"
+                variant="destructive"
+                disabled={busy}
+                onClick={() => void submit(() => removeTask(action.task.id), 'Task deleted.')}
+              >
+                {busy ? 'Deleting task…' : 'Delete task'}
+              </Button>
+            </DialogFooter>
+          </div>
+        ) : (
+          <TaskFields
+            task={kind === 'edit' ? action.task : undefined}
+            assignees={assignees}
+            descriptionInput={descriptionInput}
+            busy={busy}
+            error={error}
+            cancel={cancel}
+            save={(task) => {
+              if (kind === 'edit') void submit(() => updateTask(task), 'Task updated.');
+              else void submit(() => addTask(task), 'Task added.');
+            }}
+          />
+        )}
       </DialogContent>
     </Dialog>
   );

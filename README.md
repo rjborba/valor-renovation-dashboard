@@ -19,23 +19,22 @@ npm ci
 npm run dev
 ```
 
-Turborepo runs the dashboard on <http://localhost:3000>, Tasks on <http://localhost:3001>, Reports on <http://localhost:3002>, Filters on <http://localhost:3003>, and Editor on <http://localhost:3004>. Each remote also works as a standalone app. Use `npm run dev:dashboard`, `npm run dev:tasks`, `npm run dev:reports`, `npm run dev:filters`, or `npm run dev:editor` to start a single workspace.
+Turborepo runs the dashboard on <http://localhost:3000>, Tasks on <http://localhost:3001>, Reports on <http://localhost:3002>, and Filters on <http://localhost:3003>. Each remote also works as a standalone app. Use `npm run dev:dashboard`, `npm run dev:tasks`, `npm run dev:reports`, or `npm run dev:filters` to start a single workspace.
 
 ## How Module Federation works here
 
 | Application | Responsibility | Runtime contract |
 | --- | --- | --- |
 | Dashboard | Owns the repository, selected filters and layout | Loads three remotes and supplies the same filtered tasks to Tasks and Reports |
-| Tasks | Task list, inline status and deletion | Exposes `tasks/TasksFeature`. Loads the editor on demand and passes the host’s save callback to it |
-| Editor | Add and edit modal | Exposes `editor/TaskEditor`. Receives the current task for edits and calls the supplied save callback |
+| Tasks | Task board, editor and assignments | Exposes `tasks/TasksFeature`. Sends task changes to the host through typed callbacks |
 | Filters | Status and assignee controls | Exposes `filters/FiltersFeature`. Sends selections to the host so the board and summary update together |
 | Reports | Displayed task total, completion and status counts | Exposes `reports/ReportsFeature`. Computes its summary from the tasks supplied by the host |
 
-Each remote is an independent Rspack build. The dashboard downloads the remote manifests and JavaScript at runtime. React and React DOM are shared singletons. The colored outlines show the exact federation imports. Each consumer wraps its remote in a React error boundary. Tasks owns the nested boundary around `editor/TaskEditor`. If the editor fails to load or render, the modal offers Retry and Cancel while the filtered task board stays mounted.
+Each remote is an independent Rspack build. The dashboard downloads the remote manifests and JavaScript at runtime. React and React DOM are shared singletons. The colored outlines show the three federation imports. Add and Edit open a local dialog inside Tasks. Each feature has its own loading state, error boundary and retry action, so a single failed remote can recover while the others remain usable.
 
 ## Shared UI
 
-The dashboard and all four remotes use Tailwind CSS and shadcn/ui components from `packages/ui`. The task list, editor, and progress panel use the same theme. Each app ships CSS for standalone use. Tailwind scans the same app and component sources for each build, keeping breakpoint rules in the same order when a remote stylesheet loads after the dashboard.
+The dashboard and all three remotes use Tailwind CSS and shadcn/ui components from `packages/ui`. The task list, editor, and progress panel use the same theme. Each app ships CSS for standalone use. Tailwind scans the same app and component sources for each build, keeping breakpoint rules in the same order when a remote stylesheet loads after the dashboard.
 
 ## Where tasks are saved
 
@@ -50,16 +49,15 @@ The host passes a `TaskRepository` to the shared `TaskBoard` controller. The asy
 Use a committed checkout with a Git origin. Run the deploy scripts in order. On the first deployment, complete Zephyr sign-in from an interactive terminal.
 
 ```sh
-npm run deploy:editor
 npm run deploy:tasks
 npm run deploy:reports
 npm run deploy:filters
 npm run deploy:dashboard
 ```
 
-`npm run deploy` runs all five in that order. The deploy path runs Rspack with the Zephyr plugin and its default cloud integration. Tasks declares Editor and the dashboard declares its three direct remotes under `zephyr:dependencies` as `workspace:*`. During the host build, Zephyr resolves the remote manifests to deployed URLs. To see federation in action, open the live dashboard and look for the Tasks, Reports, and Filters manifests and entry scripts in the browser’s Network panel. Open Add task to see the Editor remote load from its own origin. [Zephyr Rspack integration](https://docs.zephyr-cloud.io/bundlers/rspack) · [Remote dependencies](https://docs.zephyr-cloud.io/features/remote-dependencies)
+`npm run deploy` runs all four in that order. The deploy path runs Rspack with the Zephyr plugin and its default cloud integration. The host declares all three remotes under `zephyr:dependencies` as `workspace:*`. During the host build, Zephyr resolves the remote manifests to deployed URLs. To see federation in action, open the live dashboard and look for the Tasks, Reports, and Filters manifests and entry scripts in the browser’s Network panel. [Zephyr Rspack integration](https://docs.zephyr-cloud.io/bundlers/rspack) · [Remote dependencies](https://docs.zephyr-cloud.io/features/remote-dependencies)
 
-The current deployment uses [Dashboard build 48](https://rodrigoj-borba-48-dashboard-valor-renovation-dash-ae991299b-ze.zephyrcloud.app/), [Tasks build 47](https://rodrigoj-borba-47-tasks-valor-renovation-dashboar-a6a20ce7c-ze.zephyrcloud.app/), [Editor build 46](https://rodrigoj-borba-46-editor-valor-renovation-dashboa-a00ea102d-ze.zephyrcloud.app/), [Reports build 42](https://rodrigoj-borba-42-reports-valor-renovation-dashbo-7936f6307-ze.zephyrcloud.app/), and [Filters build 40](https://rodrigoj-borba-40-filters-valor-renovation-dashbo-d3f9bfdfd-ze.zephyrcloud.app/). The captioned demo shows the earlier two-remote layout.
+The [previously published build list](https://github.com/rjborba/valor-renovation-dashboard/blob/52d9390/README.md#deploy-with-zephyr) documents the release that used a separate Editor remote.
 
 ## Verify
 
@@ -69,7 +67,7 @@ npm test
 npm run build:local
 ```
 
-The browser tests cover task changes, persistence, shared filters, independent remote requests and recovery. Run `npx playwright install chromium` once, then `npm run test:e2e`. Playwright starts isolated servers on ports 4300–4304. To use an installed Google Chrome, set `PLAYWRIGHT_CHROMIUM_CHANNEL=chrome`.
+The browser tests cover task changes, persistence, shared filters, independent remote requests and recovery. Run `npx playwright install chromium` once, then `npm run test:e2e`. Playwright starts isolated servers on ports 4300–4303. To use an installed Google Chrome, set `PLAYWRIGHT_CHROMIUM_CHANNEL=chrome`.
 
 ## Assignment feedback
 
