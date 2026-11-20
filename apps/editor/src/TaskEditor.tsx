@@ -226,7 +226,7 @@ export default function TaskEditor({ task, assignees, onSave, onClose }: TaskEdi
   return (
     <Dialog open onOpenChange={(open) => { if (!open) cancel(); }}>
       <DialogContent
-        className="max-h-[calc(100dvh-1.5rem)] gap-3 overflow-x-hidden overflow-y-auto overscroll-contain border-2 border-violet-500 bg-card p-4 sm:p-5"
+        className="max-h-[calc(100dvh-1.5rem)] gap-3 overflow-x-hidden overflow-y-auto overscroll-contain border-2 border-pink-600 bg-card p-4 sm:p-5"
         showCloseButton={false}
         aria-describedby={undefined}
         onOpenAutoFocus={event => { event.preventDefault(); descriptionInput.current?.focus(); }}
@@ -234,7 +234,7 @@ export default function TaskEditor({ task, assignees, onSave, onClose }: TaskEdi
         onInteractOutside={event => event.preventDefault()}
       >
         <DialogHeader className="text-left">
-          <span className="w-fit rounded bg-violet-50 px-2 py-1 text-[11px] text-violet-800">
+          <span className="w-fit rounded bg-pink-50 px-2 py-1 text-[11px] text-pink-800">
             Federated module <code>editor/TaskEditor</code>
           </span>
           <DialogTitle asChild><h3>{task ? 'Edit task' : 'Add task'}</h3></DialogTitle>
