@@ -55,7 +55,7 @@ npm run deploy:dashboard
 
 `npm run deploy` runs all three in that order. The deploy path runs Rspack with the Zephyr plugin and its default cloud integration. The host declares both remotes under `zephyr:dependencies` as `workspace:*`. During the host build, Zephyr resolves the remote manifests to deployed URLs. To see federation in action, open the live dashboard and look for the Tasks and Reports manifests and entry scripts in the browser’s Network panel. [Zephyr Rspack integration](https://docs.zephyr-cloud.io/bundlers/rspack) · [Remote dependencies](https://docs.zephyr-cloud.io/features/remote-dependencies)
 
-The public task-tracker release uses [Dashboard build 33](https://rodrigoj-borba-33-dashboard-valor-renovation-dash-3198b16ad-ze.zephyrcloud.app/), [Tasks build 36](https://rodrigoj-borba-36-tasks-valor-renovation-dashboar-6bf9d82f6-ze.zephyrcloud.app/), and [Reports build 32](https://rodrigoj-borba-32-reports-valor-renovation-dashbo-c5d6d08c6-ze.zephyrcloud.app/). The demo shows deployment, joint assignment, status changes and filtering on the public dashboard.
+The public task-tracker release uses [Dashboard build 33](https://rodrigoj-borba-33-dashboard-valor-renovation-dash-3198b16ad-ze.zephyrcloud.app/), [Tasks build 37](https://rodrigoj-borba-37-tasks-valor-renovation-dashboar-45ee4834a-ze.zephyrcloud.app/), and [Reports build 32](https://rodrigoj-borba-32-reports-valor-renovation-dashbo-c5d6d08c6-ze.zephyrcloud.app/). The demo shows deployment, joint assignment, status changes and filtering on the public dashboard.
 
 ## Verify
 
