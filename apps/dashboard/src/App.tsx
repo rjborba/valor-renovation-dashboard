@@ -38,13 +38,18 @@ class FeatureBoundary extends Component<
   }
 }
 
+const moduleColors = {
+  Tasks: { border: 'border-indigo-500', label: 'bg-indigo-50 text-indigo-800' },
+  Reports: { border: 'border-teal-600', label: 'bg-teal-50 text-teal-800' },
+};
+
 function RemoteFeature<P extends object>({
   name,
   moduleId,
   load,
   featureProps,
 }: {
-  name: string;
+  name: 'Tasks' | 'Reports';
   moduleId: string;
   load: () => Promise<{ default: ComponentType<P> }>;
   featureProps: P;
@@ -60,9 +65,17 @@ function RemoteFeature<P extends object>({
       Feature: lazy(() => retryRemote<{ default: ComponentType<P> }>(moduleId)),
     }));
   const Feature = attempt.Feature as ComponentType<P>;
+  const { border, label } = moduleColors[name];
   return (
-    <div className={`min-w-0 overflow-hidden rounded-lg border bg-card ${name === 'Tasks' ? 'border-indigo-200' : 'border-slate-300'}`} role="group" aria-labelledby={labelId}>
-      <div className="flex flex-wrap items-center gap-x-2 border-b bg-muted/50 px-4 py-2 font-mono text-[11px] text-muted-foreground" id={labelId}>
+    <div
+      className={`min-w-0 overflow-hidden rounded-lg border-2 bg-card ${border}`}
+      role="group"
+      aria-labelledby={labelId}
+    >
+      <div
+        className={`flex flex-wrap items-center gap-x-2 border-b border-inherit px-4 py-2 font-mono text-[11px] ${label}`}
+        id={labelId}
+      >
         <span className="font-sans">Federated module</span>
         <code>{moduleId}</code>
       </div>
