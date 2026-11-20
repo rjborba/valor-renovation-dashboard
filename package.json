@@ -9,6 +9,7 @@
   "scripts": {
     "dev": "turbo run dev",
     "dev:dashboard": "turbo run dev --filter=dashboard",
+    "dev:editor": "turbo run dev --filter=editor",
     "dev:tasks": "turbo run dev --filter=tasks",
     "dev:filters": "turbo run dev --filter=filters",
     "dev:reports": "turbo run dev --filter=reports",
@@ -16,11 +17,12 @@
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "tsx --test \"packages/**/*.test.ts\" \"apps/**/*.test.ts\" \"tests/**/*.test.ts\"",
     "test:e2e": "playwright test",
+    "deploy:editor": "npm run deploy --workspace editor",
     "deploy:tasks": "npm run deploy --workspace tasks",
     "deploy:reports": "npm run deploy --workspace reports",
     "deploy:filters": "npm run deploy --workspace filters",
     "deploy:dashboard": "npm run deploy --workspace dashboard",
-    "deploy": "npm run deploy:tasks && npm run deploy:reports && npm run deploy:filters && npm run deploy:dashboard"
+    "deploy": "npm run deploy:editor && npm run deploy:tasks && npm run deploy:reports && npm run deploy:filters && npm run deploy:dashboard"
   },
   "devDependencies": {
     "@module-federation/enhanced": "2.9.3",

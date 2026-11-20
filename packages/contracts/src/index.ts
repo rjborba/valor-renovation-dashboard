@@ -14,6 +14,13 @@ export interface TaskFilters {
   assignee: string;
 }
 
+export interface TaskEditorProps {
+  task?: RenovationTask;
+  assignees: readonly string[];
+  onSave(task: RenovationTask): Promise<void>;
+  onClose(message?: string): void;
+}
+
 export interface ReportsFeatureProps {
   tasks: readonly RenovationTask[];
 }

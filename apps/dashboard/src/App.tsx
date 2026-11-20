@@ -9,7 +9,7 @@ import {
 } from 'react';
 import { TaskBoard } from '@valor/task-board';
 import type { TaskRepository } from '@valor/contracts/storage';
-import { retryRemote } from './retryRemote';
+import { retryRemote } from '../../../config/retryRemote';
 import { Button } from '@valor/ui';
 import '@valor/ui/styles.css';
 
@@ -64,7 +64,7 @@ function RemoteFeature<P extends object>({
   const retry = () =>
     setAttempt((current) => ({
       id: current.id + 1,
-      Feature: lazy(() => retryRemote<{ default: ComponentType<P> }>(moduleId)),
+      Feature: lazy(() => retryRemote<{ default: ComponentType<P> }>('dashboard', moduleId)),
     }));
   const Feature = attempt.Feature as ComponentType<P>;
   const { border, label } = moduleColors[name];

@@ -6,7 +6,10 @@ import {
 } from '@valor/contracts';
 import { Badge, Button, Card, TaskStatusMenu } from '@valor/ui';
 import '@valor/ui/styles.css';
-import TaskDialog, { type TaskAction } from './TaskDialog';
+import DeleteTaskDialog from './DeleteTaskDialog';
+import FederatedTaskEditor from './FederatedTaskEditor';
+
+type TaskAction = { kind: 'add' } | { kind: 'edit' | 'delete'; task: RenovationTask };
 
 const dateFormat = new Intl.DateTimeFormat('en-GB', {
   day: 'numeric',
@@ -160,14 +163,15 @@ export default function TasksFeature({
         )}
       </Card>
 
-      {action && (
-        <TaskDialog
-          action={action}
+      {action?.kind === 'delete' && (
+        <DeleteTaskDialog task={action.task} removeTask={onRemoveTask} close={closeDialog} />
+      )}
+      {action && action.kind !== 'delete' && (
+        <FederatedTaskEditor
+          task={action.kind === 'edit' ? action.task : undefined}
           assignees={assignees}
-          addTask={onAddTask}
-          updateTask={onUpdateTask}
-          removeTask={onRemoveTask}
-          close={closeDialog}
+          onSave={action.kind === 'edit' ? onUpdateTask : onAddTask}
+          onClose={closeDialog}
         />
       )}
     </section>
