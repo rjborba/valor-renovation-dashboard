@@ -1,12 +1,11 @@
 import { useId, useRef, useState } from 'react';
 import {
   emptyFilters,
-  taskStatuses,
   type RenovationTask,
   type TaskStatus,
   type TasksFeatureProps,
 } from '@valor/contracts';
-import { Badge, Button, Card, Label, NativeSelect, NativeSelectOption, TaskStatusMenu } from '@valor/ui';
+import { Badge, Button, Card, Label, NativeSelect, NativeSelectOption, TaskStatusFilter, TaskStatusMenu } from '@valor/ui';
 import '@valor/ui/styles.css';
 import TaskDialog, { type TaskAction } from './TaskDialog';
 
@@ -150,17 +149,13 @@ export default function TasksFeature({
         role="group"
         aria-label="Task filters"
       >
-        <div className="grid min-w-0 gap-1.5 [&>[data-slot=native-select-wrapper]]:w-full">
+        <div className="grid min-w-0 gap-1.5">
           <Label htmlFor={statusId} className="text-xs text-muted-foreground">Status</Label>
-          <NativeSelect
+          <TaskStatusFilter
             id={statusId}
-            className="h-9 w-full min-w-0 bg-card"
-            value={filters.status}
-            onChange={(event) => onFiltersChange({ ...filters, status: event.currentTarget.value as TaskStatus | '' })}
-          >
-            <NativeSelectOption value="">All statuses</NativeSelectOption>
-            {taskStatuses.map((status) => <NativeSelectOption key={status}>{status}</NativeSelectOption>)}
-          </NativeSelect>
+            status={filters.status}
+            onChange={status => onFiltersChange({ ...filters, status })}
+          />
         </div>
         <div className="grid min-w-0 gap-1.5 [&>[data-slot=native-select-wrapper]]:w-full">
           <Label htmlFor={assigneeId} className="text-xs text-muted-foreground">Assignee</Label>

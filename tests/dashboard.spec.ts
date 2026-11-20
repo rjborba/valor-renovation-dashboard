@@ -47,7 +47,14 @@ test('status and assignee intersect across the board and summary, including an e
   await assignee.selectOption({ label: 'Electrician' });
   await expect(board(page).getByRole('article')).toHaveCount(2);
   await expectProgress(page, 1, 2);
-  await status.selectOption({ label: 'Done' });
+  await status.click();
+  const list = page.getByRole('listbox');
+  for (const name of ['All statuses', 'Open', 'In progress', 'Done']) {
+    const option = list.getByRole('option', { name, exact: true });
+    await expect(option.getByText(name, { exact: true }).locator('svg')).toBeVisible();
+  }
+  await list.getByRole('option', { name: 'Done', exact: true }).click();
+  await expect(status.getByText('Done', { exact: true }).locator('svg')).toBeVisible();
   await expect(board(page).getByRole('article')).toHaveCount(1);
   await expect(board(page).getByRole('article')).toContainText('bedroom reading light');
   await expectProgress(page, 1, 1);
@@ -69,7 +76,8 @@ test('retries a missing Reports manifest and keeps the chosen task filters', asy
   await expect(retry).toBeVisible();
   const status = board(page).getByRole('combobox', { name: 'Status', exact: true });
   const assignee = board(page).getByRole('combobox', { name: 'Assignee', exact: true });
-  await status.selectOption('In progress');
+  await status.click();
+  await page.getByRole('option', { name: 'In progress', exact: true }).click();
   await assignee.selectOption('Electrician');
   await expect(board(page).getByRole('article')).toHaveCount(1);
 
@@ -84,7 +92,7 @@ test('retries a missing Reports manifest and keeps the chosen task filters', asy
     retry.click(),
   ]);
   await expectProgress(page, 0, 1);
-  await expect(status).toHaveValue('In progress');
+  await expect(status).toHaveText('In progress');
   await expect(assignee).toHaveValue('Electrician');
   await expect(retry).toHaveCount(0);
 });
