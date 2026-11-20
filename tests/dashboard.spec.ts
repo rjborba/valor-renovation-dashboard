@@ -88,3 +88,23 @@ test('retries the expenses remote entry while reports stays available', async ({
   await expenses.getByRole('combobox', { name: 'Room', exact: true }).selectOption('Bathroom');
   await expect(reports.getByRole('listitem')).toHaveText(/Bathroom\s+R\$\s+2\.041,00/);
 });
+
+test('shows a discounted receipt, empty intersection, and reset in both features', async ({ page }) => {
+  await page.goto('/');
+  const ledger = page.getByRole('region', { name: 'Purchase ledger' });
+  const reports = page.getByRole('region', { name: 'Spending summary' });
+  const room = ledger.getByRole('combobox', { name: 'Room', exact: true });
+  await room.selectOption('Kitchen');
+  await ledger.getByRole('combobox', { name: 'Supplier', exact: true }).selectOption('Clay Studio');
+  await ledger.locator('summary').first().press('Enter');
+  const receipt = ledger.locator('details[open]');
+  await expect(receipt.getByRole('table', { name: 'Line items' })).toContainText('Glazed field tile');
+  await expect(receipt.locator('dl')).toHaveText(/Discount.*129,60.*Actual paid.*1\.166,40/);
+  await room.selectOption('Bedroom');
+  await expect(ledger.getByText('No matching purchases')).toBeVisible();
+  await expect(reports.getByText('No purchases to show.')).toBeVisible();
+  await expect(reports.locator('dd').first()).toHaveText(/R\$\s*0,00/);
+  await ledger.getByRole('button', { name: 'Clear filters' }).click();
+  await expect(ledger.getByRole('status')).toHaveText('8 purchases');
+  await expect(reports.locator('dd').first()).toHaveText(/R\$\s*6\.820,40/);
+});
