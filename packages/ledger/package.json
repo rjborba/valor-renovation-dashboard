@@ -1,0 +1,9 @@
+{
+  "name": "@valor/ledger",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "exports": "./src/PurchaseLedger.tsx",
+  "dependencies": { "@valor/contracts": "1.0.0" },
+  "peerDependencies": { "react": "^19.3.1" }
+}

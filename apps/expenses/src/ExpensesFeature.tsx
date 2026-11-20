@@ -1,4 +1,5 @@
-import { useId } from 'react';
+import { PurchaseDialog, type PurchaseAction } from './PurchaseDialog';
+import { useId, useState } from 'react';
 import {
   emptyFilters,
   filterPurchases,
@@ -14,14 +15,24 @@ const purchaseDateFormat = new Intl.DateTimeFormat('en-GB', {
   year: 'numeric',
   timeZone: 'UTC',
 });
-const quantityFormat = new Intl.NumberFormat('en', { maximumFractionDigits: 20 });
+const quantityFormat = new Intl.NumberFormat('en', {
+  maximumFractionDigits: 20,
+});
 
 function formatPurchaseDate(value: string) {
   const date = new Date(value);
   return Number.isNaN(date.getTime()) ? value : purchaseDateFormat.format(date);
 }
 
-function PurchaseDetails({ purchase }: { purchase: Purchase }) {
+function PurchaseDetails({
+  purchase,
+  edit,
+  remove,
+}: {
+  purchase: Purchase;
+  edit?: () => void;
+  remove?: () => void;
+}) {
   return (
     <details className="expenses-ledger__purchase">
       <summary className="expenses-ledger__row expenses-ledger__summary">
@@ -29,7 +40,9 @@ function PurchaseDetails({ purchase }: { purchase: Purchase }) {
           {formatPurchaseDate(purchase.date)}
         </time>
         <span className="expenses-ledger__purchase-info">
-          <span className="expenses-ledger__description">{purchase.description}</span>
+          <span className="expenses-ledger__description">
+            {purchase.description}
+          </span>
           <span className="expenses-ledger__supplier">
             <span className="expenses-ledger__visually-hidden">Supplier: </span>
             {purchase.supplier}
@@ -40,7 +53,9 @@ function PurchaseDetails({ purchase }: { purchase: Purchase }) {
           {purchase.room}
         </span>
         <span className="expenses-ledger__amount">
-          <span className="expenses-ledger__visually-hidden">Actual paid: </span>
+          <span className="expenses-ledger__visually-hidden">
+            Actual paid:{' '}
+          </span>
           {formatBRL(purchase.paidCents)}
         </span>
         <span className="expenses-ledger__disclosure" aria-hidden="true" />
@@ -80,6 +95,20 @@ function PurchaseDetails({ purchase }: { purchase: Purchase }) {
             <dd>{formatBRL(purchase.paidCents)}</dd>
           </div>
         </dl>
+        {(edit || remove) && (
+          <div className="purchase-actions">
+            {edit && (
+              <button type="button" onClick={edit}>
+                Edit purchase
+              </button>
+            )}
+            {remove && (
+              <button type="button" onClick={remove}>
+                Delete purchase
+              </button>
+            )}
+          </div>
+        )}
       </div>
     </details>
   );
@@ -91,13 +120,20 @@ export default function ExpensesFeature({
   suppliers,
   filters,
   onFiltersChange,
+  onAddPurchase,
+  onUpdatePurchase,
+  onRemovePurchase,
 }: ExpensesFeatureProps) {
   const headingId = useId();
+  const [action, setAction] = useState<PurchaseAction | null>(null);
   const hasFilters = filters.room !== '' || filters.supplier !== '';
   const visiblePurchases = filterPurchases(purchases, filters).sort((a, b) =>
     b.date.localeCompare(a.date),
   );
-  const totalPaid = visiblePurchases.reduce((total, purchase) => total + purchase.paidCents, 0);
+  const totalPaid = visiblePurchases.reduce(
+    (total, purchase) => total + purchase.paidCents,
+    0,
+  );
   const purchaseCount = visiblePurchases.length;
 
   return (
@@ -110,16 +146,24 @@ export default function ExpensesFeature({
         </dl>
       </header>
 
-      <div className="expenses-ledger__filters" role="group" aria-label="Purchase filters">
+      <div
+        className="expenses-ledger__filters"
+        role="group"
+        aria-label="Purchase filters"
+      >
         <label className="expenses-ledger__filter">
           <span>Room</span>
           <select
             value={filters.room}
-            onChange={(event) => onFiltersChange({ ...filters, room: event.currentTarget.value })}
+            onChange={(event) =>
+              onFiltersChange({ ...filters, room: event.currentTarget.value })
+            }
           >
             <option value="">All rooms</option>
             {rooms.map((room) => (
-              <option key={room} value={room}>{room}</option>
+              <option key={room} value={room}>
+                {room}
+              </option>
             ))}
           </select>
         </label>
@@ -127,11 +171,18 @@ export default function ExpensesFeature({
           <span>Supplier</span>
           <select
             value={filters.supplier}
-            onChange={(event) => onFiltersChange({ ...filters, supplier: event.currentTarget.value })}
+            onChange={(event) =>
+              onFiltersChange({
+                ...filters,
+                supplier: event.currentTarget.value,
+              })
+            }
           >
             <option value="">All suppliers</option>
             {suppliers.map((supplier) => (
-              <option key={supplier} value={supplier}>{supplier}</option>
+              <option key={supplier} value={supplier}>
+                {supplier}
+              </option>
             ))}
           </select>
         </label>
@@ -147,13 +198,35 @@ export default function ExpensesFeature({
         </button>
       </div>
 
-      <p className="expenses-ledger__count" role="status">
-        {purchaseCount} {purchaseCount === 1 ? 'purchase' : 'purchases'}
-      </p>
+      <div className="purchase-toolbar">
+        <p className="expenses-ledger__count" role="status">
+          {purchaseCount} {purchaseCount === 1 ? 'purchase' : 'purchases'}
+        </p>
+        {onAddPurchase && (
+          <button
+            type="button"
+            className="primary"
+            onClick={() => setAction({ kind: 'add', save: onAddPurchase })}
+          >
+            Add purchase
+          </button>
+        )}
+      </div>
+      {action && (
+        <PurchaseDialog
+          action={action}
+          rooms={rooms}
+          suppliers={suppliers}
+          close={() => setAction(null)}
+        />
+      )}
 
       {purchaseCount > 0 ? (
         <div className="expenses-ledger__records">
-          <div className="expenses-ledger__row expenses-ledger__columns" aria-hidden="true">
+          <div
+            className="expenses-ledger__row expenses-ledger__columns"
+            aria-hidden="true"
+          >
             <span>Date</span>
             <span>Purchase</span>
             <span>Room</span>
@@ -162,15 +235,39 @@ export default function ExpensesFeature({
           <ul className="expenses-ledger__list" role="list">
             {visiblePurchases.map((purchase) => (
               <li key={purchase.id}>
-                <PurchaseDetails purchase={purchase} />
+                <PurchaseDetails
+                  purchase={purchase}
+                  edit={
+                    onUpdatePurchase &&
+                    (() =>
+                      setAction({
+                        kind: 'edit',
+                        purchase,
+                        save: onUpdatePurchase,
+                      }))
+                  }
+                  remove={
+                    onRemovePurchase &&
+                    (() =>
+                      setAction({
+                        kind: 'delete',
+                        purchase,
+                        remove: onRemovePurchase,
+                      }))
+                  }
+                />
               </li>
             ))}
           </ul>
         </div>
       ) : (
         <div className="expenses-ledger__empty">
-          <h3>{hasFilters ? 'No matching purchases' : 'No purchases recorded'}</h3>
-          {hasFilters && <p>Choose a different room or supplier, or clear the filters.</p>}
+          <h3>
+            {hasFilters ? 'No matching purchases' : 'No purchases recorded'}
+          </h3>
+          {hasFilters && (
+            <p>Choose a different room or supplier, or clear the filters.</p>
+          )}
         </div>
       )}
     </section>

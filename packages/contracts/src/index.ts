@@ -24,6 +24,9 @@ export interface ExpensesFeatureProps extends ReportsFeatureProps {
   rooms: readonly string[];
   suppliers: readonly string[];
   filters: Filters;
+  onAddPurchase?: (purchase: Purchase) => Promise<void>;
+  onUpdatePurchase?: (purchase: Purchase) => Promise<void>;
+  onRemovePurchase?: (id: string) => Promise<void>;
   onFiltersChange: (filters: Filters) => void;
 }
 export const emptyFilters: Filters = { room: '', supplier: '' };

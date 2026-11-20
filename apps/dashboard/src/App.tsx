@@ -6,13 +6,8 @@ import {
   type ComponentType,
   type ReactNode,
 } from 'react';
-import {
-  emptyFilters,
-  filterPurchases,
-  purchases,
-  rooms,
-  suppliers,
-} from '@valor/contracts';
+import { PurchaseLedger } from '@valor/ledger';
+import type { PurchaseRepository } from '@valor/contracts/storage';
 import { retryRemote } from './retryRemote';
 import './dashboard.css';
 
@@ -77,9 +72,11 @@ function RemoteFeature<P extends object>({
   );
 }
 
-export default function App() {
-  const [filters, setFilters] = useState(emptyFilters);
-  const visiblePurchases = filterPurchases(purchases, filters);
+export default function App({
+  repository,
+}: {
+  repository?: PurchaseRepository;
+}) {
   return (
     <>
       <a href="#overview" className="skip">
@@ -99,37 +96,35 @@ export default function App() {
             Spending overview<span>.</span>
           </h1>
           <p className="period">
-            <span>Reporting period</span>November 2026
+            <span>Reporting period</span>All dates
           </p>
         </div>
-        <div className="features">
-          <div>
-            <RemoteFeature
-              name="Expenses"
-              moduleId="expenses/ExpensesFeature"
-              load={loadExpenses}
-              featureProps={{
-                purchases: visiblePurchases,
-                rooms,
-                suppliers,
-                filters,
-                onFiltersChange: setFilters,
-              }}
-            />
-          </div>
-          <aside>
-            <RemoteFeature
-              name="Reports"
-              moduleId="reports/ReportsFeature"
-              load={loadReports}
-              featureProps={{ purchases: visiblePurchases }}
-            />
-          </aside>
-        </div>
+        <PurchaseLedger repository={repository}>
+          {(ledger) => (
+            <div className="features">
+              <div>
+                <RemoteFeature
+                  name="Expenses"
+                  moduleId="expenses/ExpensesFeature"
+                  load={loadExpenses}
+                  featureProps={ledger}
+                />
+              </div>
+              <aside>
+                <RemoteFeature
+                  name="Reports"
+                  moduleId="reports/ReportsFeature"
+                  load={loadReports}
+                  featureProps={{ purchases: ledger.purchases }}
+                />
+              </aside>
+            </div>
+          )}
+        </PurchaseLedger>
       </main>
       <footer className="shell">
         <span>Renovation Tracker</span>
-        <span>Sample purchases · Brazilian reais (BRL)</span>
+        <span>Brazilian reais (BRL)</span>
       </footer>
     </>
   );

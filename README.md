@@ -1,8 +1,8 @@
 # Renovation Tracker
 
-Review renovation purchases and track spending by room or supplier. Explore the sample receipts, open a purchase to see its line items, or filter the ledger to update the spending summary. The sample data uses Brazilian reais (BRL). No account or backend is required to use the dashboard.
+Review renovation purchases and track spending by room or supplier. Use **Add purchase** to record an expense. Expand a receipt to edit or delete it. Filtering by room or supplier updates the spending summary. Amounts are in Brazilian reais (BRL). No account or backend is required to use the dashboard.
 
-[Open the renovation tracker](https://rodrigoj-borba-10-dashboard-valor-renovation-dash-d023cbf40-ze.zephyrcloud.app/) · [Watch the captioned demo (MP4)](https://github.com/rjborba/valor-renovation-dashboard/releases/download/renovation-tracker-demo/renovation-tracker-demo.mp4)
+[Open the renovation tracker](https://t-web-latest-rodrigoj-borba-dashboard-valor-renovatio-cffc52-ze.zephyrcloud.app/) · [Watch the captioned demo (MP4)](https://github.com/rjborba/valor-renovation-dashboard/releases/download/renovation-tracker-demo/renovation-tracker-demo.mp4)
 
 ## Run locally
 
@@ -21,13 +21,21 @@ Run `npm run typecheck` and `npm test` to check the workspace. Use `npm run buil
 
 | Application | Owns | Runtime contract |
 | --- | --- | --- |
-| Dashboard | Page layout, fixture data, selected room and supplier, loading and recovery | Loads both remotes and passes the filtered purchases to each |
-| Expenses | Filter controls, purchase ledger, receipt details | Exposes `expenses/ExpensesFeature` and requests filter changes through a callback |
+| Dashboard | Page layout, purchase repository, selected room and supplier, loading and recovery | Loads both remotes and passes the filtered purchases to each |
+| Expenses | Filter controls, purchase editor, ledger and receipt details | Exposes `expenses/ExpensesFeature` and requests changes through host callbacks |
 | Reports | Paid total, purchase count, spending by room | Exposes `reports/ReportsFeature` and derives every metric from its purchases prop |
 
 The two remote features are independent Rspack builds. The browser retrieves their manifests and JavaScript at runtime. React and React DOM are shared singletons. The shell owns the filter state, so changes reach both features without a cross-application event bus. Each remote has its own Suspense and error boundary.
 
 The shared TypeScript contract lives in `packages/contracts`. Fixtures use integer cents. Aggregation sums the amount actually paid on each receipt, which already includes its discount.
+
+## Purchase storage
+
+The first visit seeds eight sample receipts in browser localStorage. Adding, editing, and deleting a purchase updates Reports after the write succeeds. An empty ledger stays empty after refresh. The amount paid is the receipt total after discounts. Optional line items and the discount field describe that payment.
+
+Open the same dashboard URL in the same browser profile to return to your ledger. Each origin has its own storage, including each standalone app and each version-specific Zephyr URL. Clearing site data removes that origin’s ledger.
+
+The host injects a `PurchaseRepository` into `PurchaseLedger`. Its four asynchronous methods (`list`, `add`, `update`, and `remove`) return the current purchase list. To use a database, implement that contract with calls to your backend and pass the adapter through the dashboard’s `repository` prop. Expenses and Reports only receive data and callbacks. The browser integration test in `tests/injected-host.spec.ts` exercises that substitution.
 
 ## Deploy with Zephyr
 
@@ -72,7 +80,7 @@ Renovation Tracker runs Dashboard build 10 with [Expenses build 8](https://rodri
 
 ## Implementation and assignment feedback
 
-A filter change makes the federation boundary visible. Expenses raises the change to the host. The host passes both features the same filtered records, and Reports recalculates from those records. Passing a small typed contract lets each team release a complete feature independently. The data is fictional and in memory, so refreshing resets the filters.
+A filter change makes the federation boundary visible. Expenses raises the change to the host. The host passes both features the same filtered records, and Reports recalculates from those records. Passing a small typed contract lets each team release a complete feature independently. Refreshing resets the filters and reloads the saved ledger.
 
 The default Zephyr integration made the first release quick once the repository had a Git origin. The build output included the resolved remote URLs, which helped verify the public host. Two parts took extra investigation:
 

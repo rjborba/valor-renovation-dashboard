@@ -489,3 +489,37 @@ body:has(.expenses-standalone) {
     appearance: auto;
   }
 }
+
+.purchase-toolbar, .purchase-actions {
+  display: flex;
+  align-items: center;
+  gap: .65rem;
+  flex-wrap: wrap;
+}
+.purchase-toolbar { justify-content: space-between; margin-block: .9rem; }
+.purchase-toolbar .expenses-ledger__count { margin: 0; }
+.purchase-actions { grid-column: 1 / -1; justify-content: flex-end; }
+.purchase-toolbar button, .purchase-actions button, .purchase-dialog button {
+  font: inherit; font-size: .9rem; font-weight: 600; padding: .55rem .85rem;
+  border: 1px solid #a7b9b0; border-radius: .35rem; background: #fffdf7; color: #23483f; cursor: pointer;
+}
+.purchase-toolbar .primary, .purchase-actions .primary { color: white; background: #136456; border-color: #136456; }
+.purchase-actions .danger { color: white; background: #923a2a; border-color: #923a2a; }
+.purchase-dialog {
+  width: min(32rem, 94vw); max-height: 87vh; overflow-y: auto; border: 1px solid #c8cabc;
+  border-radius: .7rem; background: #fffdf7; padding: clamp(1rem,4vw,2rem); color: #152f36;
+  box-shadow: 0 12px 45px #172d2936;
+}
+.purchase-dialog::backdrop { background: #16302d85; }
+.purchase-dialog h2 { font: 2rem/1.1 Georgia,serif; margin: 0 0 1rem; }
+.purchase-dialog .purchase-actions { margin-top: 1.2rem; }
+.purchase-dialog button:disabled { opacity: .65; }
+.purchase-fields { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: .8rem; border: 0; margin: 0; padding: 0; min-width: 0; }
+.purchase-fields .wide { grid-column: 1 / -1; }
+.purchase-fields label { display: grid; gap: .25rem; font: 600 .85rem/1.4 system-ui,sans-serif; }
+.purchase-fields input { font: 1rem system-ui,sans-serif; min-width: 0; width: 100%; padding: .5rem; border: 1px solid #a7b9b0; border-radius: .3rem; }
+.purchase-items summary { cursor: pointer; }
+.purchase-items[open] > * { margin-block-end: .7rem; }
+.purchase-items fieldset { display: grid; gap: .5rem; border: 1px solid #c8cabc; min-width: 0; }
+.purchase-dialog [role=alert] { color: #923a2a; }
+@media (max-width: 420px) { .purchase-fields { grid-template-columns: 1fr; } }
