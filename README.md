@@ -57,7 +57,7 @@ npm run deploy:dashboard
 
 `npm run deploy` runs all four in that order. The deploy path runs Rspack with the Zephyr plugin and its default cloud integration. The host declares all three remotes under `zephyr:dependencies` as `workspace:*`. During the host build, Zephyr resolves the remote manifests to deployed URLs. To see federation in action, open the live dashboard and look for the Tasks, Reports, and Filters manifests and entry scripts in the browser’s Network panel. [Zephyr Rspack integration](https://docs.zephyr-cloud.io/bundlers/rspack) · [Remote dependencies](https://docs.zephyr-cloud.io/features/remote-dependencies)
 
-The earlier two-remote release uses [Dashboard build 33](https://rodrigoj-borba-33-dashboard-valor-renovation-dash-3198b16ad-ze.zephyrcloud.app/), [Tasks build 37](https://rodrigoj-borba-37-tasks-valor-renovation-dashboar-45ee4834a-ze.zephyrcloud.app/), and [Reports build 32](https://rodrigoj-borba-32-reports-valor-renovation-dashbo-c5d6d08c6-ze.zephyrcloud.app/). The demo shows deployment, joint assignment, status changes and filtering on the public dashboard.
+The current deployment uses [Dashboard build 41](https://rodrigoj-borba-41-dashboard-valor-renovation-dash-f9cf47824-ze.zephyrcloud.app/), [Tasks build 38](https://rodrigoj-borba-38-tasks-valor-renovation-dashboar-d89e13e5d-ze.zephyrcloud.app/), [Reports build 39](https://rodrigoj-borba-39-reports-valor-renovation-dashbo-20b947b36-ze.zephyrcloud.app/), and [Filters build 40](https://rodrigoj-borba-40-filters-valor-renovation-dashbo-d3f9bfdfd-ze.zephyrcloud.app/). The captioned demo shows the earlier two-remote layout.
 
 ## Verify
 
