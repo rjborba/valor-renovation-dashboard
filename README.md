@@ -2,7 +2,7 @@
 
 Field Ledger is a renovation tracker for reviewing purchases and spending by room or supplier. Explore the sample receipts, open a purchase to see its line items, or filter the ledger to update the spending summary. The sample data uses Brazilian reais (BRL). No account or backend is required to use the dashboard.
 
-[Open the deployed dashboard](https://rodrigoj-borba-5-dashboard-valor-renovation-dashb-ea051498e-ze.zephyrcloud.app/) · [Watch the 29-second captioned demo (MP4)](https://github.com/rjborba/valor-renovation-dashboard/releases/download/interview-demo/field-ledger-demo.mp4)
+[Open the renovation tracker](https://rodrigoj-borba-7-dashboard-valor-renovation-dashb-9263ba39e-ze.zephyrcloud.app/) · [Watch the captioned demo (MP4)](https://github.com/rjborba/valor-renovation-dashboard/releases/download/renovation-tracker/field-ledger-demo.mp4)
 
 ## Run locally
 
@@ -54,7 +54,7 @@ To use an installed Google Chrome instead, run `PLAYWRIGHT_CHROMIUM_CHANNEL=chro
 
 ## Independent release and rollback
 
-The public demo is intentionally on Reports v1 after the rollback. The repository includes the v2 source so you can inspect the change or run it locally.
+The current tracker runs Dashboard build 7 with Expenses build 3 and Reports v2 build 6. The table below records the earlier release exercise on Dashboard build 5, where we switched Reports from v1 to v2 and back to v1.
 
 | Component | Verified Zephyr deployment | Source |
 | --- | --- | --- |
