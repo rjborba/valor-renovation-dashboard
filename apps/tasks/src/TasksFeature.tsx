@@ -34,10 +34,10 @@ function TaskRow({
 
   return (
     <article
-      className="grid min-w-0 gap-x-3 gap-y-2 py-3 @xs:grid-cols-[minmax(0,1fr)_auto] @3xl:grid-cols-[minmax(0,1fr)_auto_auto] @3xl:items-center"
+      className="grid min-w-0 gap-x-3 gap-y-2 py-3 @3xs:grid-cols-[minmax(0,1fr)_auto] @3xs:items-center @lg:items-start @3xl:grid-cols-[minmax(0,1fr)_auto_auto] @3xl:items-center"
       aria-labelledby={titleId}
     >
-      <div className="min-w-0 @xs:col-span-2 @lg:col-span-1 @lg:row-span-2 @3xl:row-span-1">
+      <div className="min-w-0 @3xs:col-span-2 @lg:col-span-1 @lg:row-span-2 @3xl:row-span-1">
         <h3 id={titleId} className="text-sm leading-5 font-semibold [overflow-wrap:anywhere] whitespace-pre-wrap">
           {task.description}
         </h3>
@@ -62,7 +62,7 @@ function TaskRow({
           </dd>
         </dl>
       </div>
-      <div className="-mx-2 flex flex-wrap items-center gap-1 @xs:mx-0 @xs:justify-end">
+      <div className="-mx-2 flex flex-wrap items-center gap-1 @3xs:mx-0 @3xs:justify-end">
         <Button
           type="button"
           variant="ghost"
@@ -166,7 +166,7 @@ export default function TasksFeature({
         <Button
           type="button"
           variant="ghost"
-          className="col-span-full -ml-4 justify-self-start text-muted-foreground aria-disabled:cursor-default aria-disabled:opacity-60 aria-disabled:hover:bg-transparent aria-disabled:hover:text-muted-foreground @lg:col-span-1 @lg:ml-0"
+          className="col-span-full justify-self-start px-0 text-muted-foreground aria-disabled:cursor-default aria-disabled:opacity-60 aria-disabled:hover:bg-transparent aria-disabled:hover:text-muted-foreground @lg:col-span-1 @lg:px-3"
           aria-disabled={!hasFilters}
           onClick={() => {
             if (hasFilters) onFiltersChange({ ...emptyFilters });
