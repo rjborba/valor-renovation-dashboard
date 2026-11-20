@@ -2,7 +2,7 @@
 
 Review renovation purchases and track spending by room or supplier. Use **Add purchase** to record an expense. Expand a receipt to edit or delete it. Filtering by room or supplier updates the spending summary. Amounts are in Brazilian reais (BRL). No account or backend is required to use the dashboard.
 
-[Open the renovation tracker](https://t-web-latest-rodrigoj-borba-dashboard-valor-renovatio-cffc52-ze.zephyrcloud.app/) · [Watch the captioned demo (MP4)](https://github.com/rjborba/valor-renovation-dashboard/releases/download/renovation-tracker-demo/renovation-tracker-demo.mp4)
+[Open the renovation tracker](https://t-web-latest-rodrigoj-borba-dashboard-valor-renovatio-cffc52-ze.zephyrcloud.app/) · [Watch the captioned demo (MP4)](https://github.com/rjborba/valor-renovation-dashboard/releases/download/purchase-ledger-demo/renovation-tracker-demo.mp4)
 
 ## Run locally
 
@@ -64,7 +64,7 @@ To use an installed Google Chrome instead, run `PLAYWRIGHT_CHROMIUM_CHANNEL=chro
 
 ## Independent release and rollback
 
-Renovation Tracker runs Dashboard build 10 with [Expenses build 8](https://rodrigoj-borba-8-expenses-valor-renovation-dashbo-4cbfa2a7f-ze.zephyrcloud.app/) and [Reports build 9](https://rodrigoj-borba-9-reports-valor-renovation-dashboa-9661c7e54-ze.zephyrcloud.app/). The table below records the earlier release exercise on Dashboard build 5, where we switched Reports from v1 to v2 and back to v1.
+The stable dashboard URL currently serves [Dashboard build 13](https://rodrigoj-borba-13-dashboard-valor-renovation-dash-6a0252499-ze.zephyrcloud.app/), with [Expenses build 11](https://rodrigoj-borba-11-expenses-valor-renovation-dashb-4c84ad530-ze.zephyrcloud.app/) and [Reports build 12](https://rodrigoj-borba-12-reports-valor-renovation-dashbo-b6b9ca45d-ze.zephyrcloud.app/). The table below records the earlier release exercise on Dashboard build 5, where we switched Reports from v1 to v2 and back to v1.
 
 | Component | Verified Zephyr deployment | Source |
 | --- | --- | --- |
