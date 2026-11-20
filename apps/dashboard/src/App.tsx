@@ -2,6 +2,7 @@ import {
   Component,
   lazy,
   Suspense,
+  useId,
   useState,
   type ComponentType,
   type ReactNode,
@@ -47,6 +48,7 @@ function RemoteFeature<P extends object>({
   load: () => Promise<{ default: ComponentType<P> }>;
   featureProps: P;
 }) {
+  const labelId = useId();
   const [attempt, setAttempt] = useState(() => ({
     id: 0,
     Feature: lazy(load),
@@ -58,17 +60,23 @@ function RemoteFeature<P extends object>({
     }));
   const Feature = attempt.Feature as ComponentType<P>;
   return (
-    <FeatureBoundary key={attempt.id} name={name} retry={retry}>
-      <Suspense
-        fallback={
-          <div className="feature-message" role="status">
-            Loading {name}…
-          </div>
-        }
-      >
-        <Feature {...featureProps} />
-      </Suspense>
-    </FeatureBoundary>
+    <div className="remote-frame" role="group" aria-labelledby={labelId}>
+      <div className="remote-label" id={labelId}>
+        <span>Federated module</span>
+        <code>{moduleId}</code>
+      </div>
+      <FeatureBoundary key={attempt.id} name={name} retry={retry}>
+        <Suspense
+          fallback={
+            <div className="feature-message" role="status">
+              Loading {name}…
+            </div>
+          }
+        >
+          <Feature {...featureProps} />
+        </Suspense>
+      </FeatureBoundary>
+    </div>
   );
 }
 

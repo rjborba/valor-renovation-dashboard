@@ -15,6 +15,14 @@ test('loads both federated features from their own origins and stacks them on mo
   await Promise.all([...manifests, ...entries]);
   const expenses = page.getByRole('region', { name: 'Purchase ledger' });
   const reports = page.getByRole('region', { name: 'Spending summary' });
+  for (const [moduleId, heading] of [
+    ['expenses/ExpensesFeature', 'Purchase ledger'],
+    ['reports/ReportsFeature', 'Spending summary'],
+  ]) {
+    const frame = page.getByRole('group', { name: `Federated module ${moduleId}`, exact: true });
+    await expect(frame.getByText(moduleId, { exact: true })).toBeVisible();
+    await expect(frame.getByRole('heading', { name: heading })).toBeVisible();
+  }
   await expect(expenses).toBeVisible();
   await expect(reports.getByText('R$ 6.820,40')).toBeVisible();
   const desktopExpenses = (await expenses.boundingBox())!;

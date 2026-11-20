@@ -98,6 +98,40 @@ h1 span {
 .features > * {
   min-width: 0;
 }
+.remote-frame {
+  --frame-border: #468475;
+  --frame-ink: #204d40;
+  --frame-tint: #e9f2ec;
+  border: 2px solid var(--frame-border);
+  border-radius: .75rem;
+  padding: clamp(.65rem, 1.25vw, 1.1rem);
+}
+.features aside .remote-frame {
+  --frame-border: #ab8053;
+  --frame-ink: #624323;
+  --frame-tint: #f4ebdc;
+}
+.remote-label {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: .25rem .65rem;
+  margin: 0 0 .75rem;
+  padding: .4rem .65rem;
+  border-radius: .3rem;
+  background: var(--frame-tint);
+  color: var(--frame-ink);
+}
+.remote-label span {
+  font-size: .68rem;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+.remote-label code {
+  font-size: .82rem;
+  overflow-wrap: anywhere;
+}
 .feature-message {
   padding: 28px;
   border: 1px solid #d3d9cc;
