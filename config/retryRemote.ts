@@ -1,4 +1,4 @@
-import { getInstance } from '@module-federation/enhanced/runtime';
+import { getInstance } from '@module-federation/runtime';
 
 export async function retryRemote<T>(hostName: string, moduleId: string): Promise<T> {
   const host = getInstance(instance => instance.name === hostName);

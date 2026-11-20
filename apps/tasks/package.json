@@ -3,9 +3,10 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "rspack serve --mode development",
-    "build:local": "rspack build --mode production",
-    "deploy": "rspack build --mode production --env zephyr"
+    "dev": "vite",
+    "build:local": "vite build",
+    "preview": "vite preview",
+    "deploy": "vite build --mode zephyr"
   },
   "dependencies": {
     "@valor/contracts": "1.0.0",
@@ -13,5 +14,6 @@
     "@valor/ui": "1.0.0",
     "react": "19.3.1",
     "react-dom": "19.3.1"
-  }
+  },
+  "type": "module"
 }

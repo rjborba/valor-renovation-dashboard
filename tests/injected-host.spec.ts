@@ -1,31 +1,14 @@
-import { basename, join, resolve } from 'node:path';
-import { rspack, type Configuration } from '@rspack/core';
+import { resolve } from 'node:path';
 import { test, expect } from '@playwright/test';
-import { dashboardPort } from './servers';
 import { board, expectProgress, readStorage } from './task-ui';
 
-test('the real dashboard and remotes read and mutate an injected in-memory repository', async ({ page }, info) => {
-  const output = info.outputPath('dashboard');
-  const config: Configuration = require('../apps/dashboard/rspack.config.cjs')({ dashboardPort });
-  await new Promise<void>((done, reject) => {
-    rspack({
-      ...config,
-      mode: 'development',
-      devtool: false,
-      entry: resolve(__dirname, 'fixtures/injected-host.ts'),
-      output: { ...config.output, path: output, filename: '[name].js', publicPath: '/__injected__/' },
-    }, (error, stats) => {
-      if (error) reject(error);
-      else if (!stats || stats.hasErrors()) reject(new Error(stats?.toString('errors-only') ?? 'Dashboard build failed'));
-      else done();
-    });
-  });
-  await page.route('**/__injected__/*', route => {
-    const name = basename(new URL(route.request().url()).pathname);
-    return route.fulfill({ path: join(output, name) });
-  });
-  // Keep the host document on loopback and load the real remote containers.
-  await page.route('/main.js', route => route.fulfill({ path: join(output, 'main.js') }));
+test('the real dashboard and remotes read and mutate an injected in-memory repository', async ({ page }) => {
+  // Keep the host's real Vite initialization and substitute only the React entry.
+  const entry = '/@fs/' + resolve(import.meta.dirname, 'fixtures/injected-host.ts');
+  await page.route('/src/index.ts', route => route.fulfill({
+    contentType: 'application/javascript',
+    body: `import ${JSON.stringify(entry)};`,
+  }));
   await page.goto('/');
   const row = board(page).getByRole('article', { name: 'Inspect the injected board' });
   await expect(row).toContainText('Inspector');

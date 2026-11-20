@@ -1,4 +1,11 @@
 {
   "extends": "./tsconfig.base.json",
-  "include": ["config/assets.d.ts", "apps/*/src", "packages/*/src", "tests", "playwright.config.ts"]
+  "include": [
+    "config",
+    "apps/*/src",
+    "apps/*/vite.config.ts",
+    "packages/*/src",
+    "tests",
+    "playwright.config.ts"
+  ]
 }

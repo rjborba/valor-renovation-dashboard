@@ -1,6 +1,5 @@
 node_modules/
 dist/
-.rspack-cache/
 .cache/
 .mf/
 @mf-types/

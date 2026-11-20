@@ -5,19 +5,23 @@ export default defineConfig({
   testDir: './tests',
   webServer: [
     {
-      command: `npm run dev -w dashboard -- --env dashboardPort=${dashboardPort}`,
+      env: { VALOR_BASE_PORT: String(dashboardPort) },
+      command: `npm run dev -w dashboard`,
       url: dashboardOrigin,
     },
     {
-      command: `npm run dev -w tasks -- --port ${dashboardPort + 1}`,
+      env: { VALOR_BASE_PORT: String(dashboardPort) },
+      command: `npm run dev -w tasks`,
       url: `${tasksOrigin}/mf-manifest.json`,
     },
     {
-      command: `npm run dev -w reports -- --port ${dashboardPort + 2}`,
+      env: { VALOR_BASE_PORT: String(dashboardPort) },
+      command: `npm run dev -w reports`,
       url: `${reportsOrigin}/mf-manifest.json`,
     },
     {
-      command: `npm run dev -w filters -- --port ${dashboardPort + 3}`,
+      env: { VALOR_BASE_PORT: String(dashboardPort) },
+      command: `npm run dev -w filters`,
       url: `${filtersOrigin}/mf-manifest.json`,
     },
   ],

@@ -3,9 +3,10 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "rspack serve --mode development",
-    "build:local": "rspack build --mode production",
-    "deploy": "rspack build --mode production --env zephyr"
+    "dev": "vite",
+    "build:local": "vite build",
+    "preview": "vite preview",
+    "deploy": "vite build --mode zephyr"
   },
   "dependencies": {
     "@valor/contracts": "1.0.0",
@@ -18,5 +19,6 @@
     "tasks": "workspace:*",
     "reports": "workspace:*",
     "filters": "workspace:*"
-  }
+  },
+  "type": "module"
 }
