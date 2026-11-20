@@ -2,7 +2,7 @@
 
 Track what each person on a renovation has promised and when it is due. A task can belong to several people or trades. For example, the architect and electrician can share one task to confirm the kitchen island outlets before the stone contractor cuts the countertop.
 
-[Open Renovation Tracker](https://t-web-latest-rodrigoj-borba-dashboard-valor-renovatio-cffc52-ze.zephyrcloud.app/) · [Watch the captioned demo (MP4)](https://github.com/rjborba/valor-renovation-dashboard/releases/download/task-tracker-demo/renovation-tracker-demo.mp4)
+[Open Renovation Tracker](https://t-web-latest-rodrigoj-borba-dashboard-valor-renovatio-cffc52-ze.zephyrcloud.app/) · [Watch the captioned demo (MP4)](https://github.com/rjborba/valor-renovation-dashboard/releases/download/shadcn-task-tracker/renovation-tracker-demo.mp4)
 
 ## Using the board
 
@@ -55,7 +55,7 @@ npm run deploy:dashboard
 
 `npm run deploy` runs all three in that order. The deploy path runs Rspack with the Zephyr plugin and its default cloud integration. The host declares both remotes under `zephyr:dependencies` as `workspace:*`. During the host build, Zephyr resolves the remote manifests to deployed URLs. To see federation in action, open the live dashboard and look for the Tasks and Reports manifests and entry scripts in the browser’s Network panel. [Zephyr Rspack integration](https://docs.zephyr-cloud.io/bundlers/rspack) · [Remote dependencies](https://docs.zephyr-cloud.io/features/remote-dependencies)
 
-The public task-tracker release uses [Dashboard build 20](https://rodrigoj-borba-20-dashboard-valor-renovation-dash-0aef48450-ze.zephyrcloud.app/), [Tasks build 18](https://rodrigoj-borba-18-tasks-valor-renovation-dashboar-e6a1b453d-ze.zephyrcloud.app/), and [Reports build 19](https://rodrigoj-borba-19-reports-valor-renovation-dashbo-44d40f60b-ze.zephyrcloud.app/). The demo shows deployment, joint assignment, status changes and filtering on the public dashboard.
+The public task-tracker release uses [Dashboard build 23](https://rodrigoj-borba-23-dashboard-valor-renovation-dash-eefb88aa1-ze.zephyrcloud.app/), [Tasks build 21](https://rodrigoj-borba-21-tasks-valor-renovation-dashboar-d594621dc-ze.zephyrcloud.app/), and [Reports build 22](https://rodrigoj-borba-22-reports-valor-renovation-dashbo-ee2637edc-ze.zephyrcloud.app/). The demo shows deployment, joint assignment, status changes and filtering on the public dashboard.
 
 ## Verify
 
