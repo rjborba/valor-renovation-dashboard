@@ -17,7 +17,7 @@
   },
   "zephyr:dependencies": {
     "tasks": "workspace:*",
-    "reports": "workspace:*",
+    "summary": "workspace:*",
     "filters": "workspace:*"
   },
   "type": "module"

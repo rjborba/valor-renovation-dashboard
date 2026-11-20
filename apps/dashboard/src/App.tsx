@@ -12,13 +12,13 @@ import { Button, FeatureBoundary } from '@valor/ui';
 import '@valor/ui/styles.css';
 
 const loadTasks = () => import('tasks/TasksFeature');
-const loadReports = () => import('reports/ReportsFeature');
+const loadSummary = () => import('summary/SummaryFeature');
 const loadFilters = () => import('filters/FiltersFeature');
 
 const moduleColors = {
   Tasks: { border: 'border-indigo-500', label: 'bg-indigo-50 text-indigo-800' },
   Filters: { border: 'border-amber-500', label: 'bg-amber-50 text-amber-900' },
-  Reports: { border: 'border-teal-600', label: 'bg-teal-50 text-teal-800' },
+  Summary: { border: 'border-teal-600', label: 'bg-teal-50 text-teal-800' },
 };
 
 function RemoteFeature<P extends object>({
@@ -106,9 +106,9 @@ export default function App({
             <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(280px,0.42fr)]">
               <div className="min-w-0 lg:col-span-2">
                 <RemoteFeature
-                  name="Reports"
-                  moduleId="reports/ReportsFeature"
-                  load={loadReports}
+                  name="Summary"
+                  moduleId="summary/SummaryFeature"
+                  load={loadSummary}
                   featureProps={{ tasks: board.tasks }}
                 />
               </div>

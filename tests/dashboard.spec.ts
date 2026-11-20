@@ -1,9 +1,9 @@
 import { expect, test } from '@playwright/test';
-import { filtersOrigin, reportsOrigin, tasksOrigin } from './servers';
-import { board, expectProgress, filtersPanel, reports } from './task-ui';
+import { filtersOrigin, summaryOrigin, tasksOrigin } from './servers';
+import { board, expectProgress, filtersPanel, summary } from './task-ui';
 
 test('loads three independent remotes and places the summary above filters and tasks', async ({ page }) => {
-  const assets = [tasksOrigin, reportsOrigin, filtersOrigin].flatMap(origin =>
+  const assets = [tasksOrigin, summaryOrigin, filtersOrigin].flatMap(origin =>
     ['mf-manifest.json', 'remoteEntry.js'].map(file =>
       page.waitForResponse(response => response.url() === `${origin}/${file}` && response.ok()),
     ),
@@ -11,7 +11,7 @@ test('loads three independent remotes and places the summary above filters and t
   await Promise.all([page.goto('/'), ...assets]);
   for (const [moduleId, heading] of [
     ['tasks/TasksFeature', 'Task board'],
-    ['reports/ReportsFeature', 'Task summary'],
+    ['summary/SummaryFeature', 'Task summary'],
     ['filters/FiltersFeature', 'Task filters'],
   ]) {
     const frame = page.getByRole('group', { name: `Federated module ${moduleId}`, exact: true });
@@ -20,19 +20,19 @@ test('loads three independent remotes and places the summary above filters and t
   // Each remote loads CSS. Its base utilities must respect the shell's desktop breakpoint.
   await expect(page.getByRole('main')).toHaveCSS('padding-left', '48px');
   const tasksBox = (await board(page).boundingBox())!;
-  const reportsBox = (await reports(page).boundingBox())!;
+  const summaryBox = (await summary(page).boundingBox())!;
   const filtersBox = (await filtersPanel(page).boundingBox())!;
   expect(filtersBox.x).toBeGreaterThanOrEqual(tasksBox.x + tasksBox.width);
-  expect(reportsBox.y + reportsBox.height).toBeLessThanOrEqual(Math.min(filtersBox.y, tasksBox.y));
-  expect(reportsBox.width).toBeGreaterThan(tasksBox.width + filtersBox.width);
+  expect(summaryBox.y + summaryBox.height).toBeLessThanOrEqual(Math.min(filtersBox.y, tasksBox.y));
+  expect(summaryBox.width).toBeGreaterThan(tasksBox.width + filtersBox.width);
 
   await page.setViewportSize({ width: 375, height: 812 });
   await expect(page.getByRole('main')).toHaveCSS('padding-left', '16px');
   const mobileTasks = (await board(page).boundingBox())!;
-  const mobileReports = (await reports(page).boundingBox())!;
-  expect(mobileReports.x).toBeCloseTo(mobileTasks.x);
+  const mobileSummary = (await summary(page).boundingBox())!;
+  expect(mobileSummary.x).toBeCloseTo(mobileTasks.x);
   const mobileFilters = (await filtersPanel(page).boundingBox())!;
-  expect(mobileFilters.y).toBeGreaterThanOrEqual(mobileReports.y + mobileReports.height);
+  expect(mobileFilters.y).toBeGreaterThanOrEqual(mobileSummary.y + mobileSummary.height);
   expect(mobileTasks.y).toBeGreaterThanOrEqual(mobileFilters.y + mobileFilters.height);
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(375);
 });
@@ -43,9 +43,9 @@ test('status and assignee intersect across the board and summary, including an e
   const status = filters.getByRole('combobox', { name: 'Status', exact: true });
   const assignee = filters.getByRole('combobox', { name: 'Assignee', exact: true });
   await expectProgress(page, 1, 5);
-  const counts = reports(page).getByLabel('Task counts by status');
+  const counts = summary(page).getByLabel('Task counts by status');
   await expect(counts.getByRole('definition')).toHaveText(['2', '2', '1']);
-  await expect(reports(page).getByText(/Promised due dates/)).toHaveCount(0);
+  await expect(summary(page).getByText(/Promised due dates/)).toHaveCount(0);
   await assignee.selectOption({ label: 'Electrician' });
   await expect(board(page).getByRole('article')).toHaveCount(2);
   await expectProgress(page, 1, 2);
@@ -69,11 +69,11 @@ test('status and assignee intersect across the board and summary, including an e
   await expectProgress(page, 1, 5);
 });
 
-test('retries a missing Reports manifest and keeps the chosen task filters', async ({ page }) => {
-  const url = `${reportsOrigin}/mf-manifest.json`;
+test('retries a missing Summary manifest and keeps the chosen task filters', async ({ page }) => {
+  const url = `${summaryOrigin}/mf-manifest.json`;
   await page.route(url, route => route.abort('connectionfailed'));
   await page.goto('/');
-  const retry = page.getByRole('alert').getByRole('button', { name: 'Retry Reports' });
+  const retry = page.getByRole('alert').getByRole('button', { name: 'Retry Summary' });
   await expect(retry).toBeVisible();
   const status = filtersPanel(page).getByRole('combobox', { name: 'Status', exact: true });
   const assignee = filtersPanel(page).getByRole('combobox', { name: 'Assignee', exact: true });
@@ -98,7 +98,7 @@ test('retries a missing Reports manifest and keeps the chosen task filters', asy
   await expect(retry).toHaveCount(0);
 });
 
-test('recovers the Tasks entry while Reports continues serving the saved board', async ({ page }) => {
+test('recovers the Tasks entry while Summary continues serving the saved board', async ({ page }) => {
   const url = `${tasksOrigin}/remoteEntry.js`;
   await page.route(url, route => route.abort('connectionfailed'));
   await page.goto('/');
@@ -114,7 +114,7 @@ test('recovers the Tasks entry while Reports continues serving the saved board',
   await expect(retry).toHaveCount(0);
 });
 
-test('retries Filters independently while Tasks and Reports remain usable', async ({ page }) => {
+test('retries Filters independently while Tasks and Summary remain usable', async ({ page }) => {
   const url = `${filtersOrigin}/mf-manifest.json`;
   await page.route(url, route => route.abort('connectionfailed'));
   await page.goto('/');
@@ -149,7 +149,7 @@ test('each remote renders directly with its own standalone wrapper', async ({ pa
   await page.keyboard.press('Escape');
   expect(requests).toEqual([]);
   await page.unroute('**/*');
-  await page.goto(reportsOrigin);
+  await page.goto(summaryOrigin);
   await expectProgress(page, 1, 5);
   await page.goto(filtersOrigin);
   const assignee = filtersPanel(page).getByRole('combobox', { name: 'Assignee' });

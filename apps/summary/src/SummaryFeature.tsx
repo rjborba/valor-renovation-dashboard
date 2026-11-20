@@ -1,4 +1,4 @@
-import { taskStatuses, type ReportsFeatureProps } from '@valor/contracts';
+import { taskStatuses, type SummaryFeatureProps } from '@valor/contracts';
 import { Card, CardContent, Progress, TaskStatusSymbol } from '@valor/ui';
 import '@valor/ui/styles.css';
 import { useId } from 'react';
@@ -7,7 +7,7 @@ import { summarizeCommitments } from './summarizeCommitments';
 const formatCount = new Intl.NumberFormat('en');
 const formatPercent = new Intl.NumberFormat('en', { style: 'percent' });
 
-export default function ReportsFeature({ tasks }: ReportsFeatureProps) {
+export default function SummaryFeature({ tasks }: SummaryFeatureProps) {
   const headingId = useId();
   const progressLabelId = useId();
   const { total, counts } = summarizeCommitments(tasks);

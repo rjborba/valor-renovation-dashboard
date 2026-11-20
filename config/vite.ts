@@ -31,6 +31,7 @@ export function createConfig(
 
     return {
       root,
+      cacheDir: `node_modules/.vite/${mode}-${port}`,
       plugins: [
         react(),
         ...(mode === 'zephyr' ? withZephyr({ mfConfig }) : federation(mfConfig)),

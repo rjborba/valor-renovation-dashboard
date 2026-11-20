@@ -19,7 +19,7 @@ npm ci
 npm run dev
 ```
 
-Turborepo runs the dashboard on <http://localhost:3000>, Tasks on <http://localhost:3001>, Reports on <http://localhost:3002>, and Filters on <http://localhost:3003>. Each remote also works as a standalone app. Use `npm run dev:dashboard`, `npm run dev:tasks`, `npm run dev:reports`, or `npm run dev:filters` to start a single workspace.
+Turborepo runs the dashboard on <http://localhost:3000>, Tasks on <http://localhost:3001>, Summary on <http://localhost:3002>, and Filters on <http://localhost:3003>. Each remote also works as a standalone app. Use `npm run dev:dashboard`, `npm run dev:tasks`, `npm run dev:summary`, or `npm run dev:filters` to start a single workspace.
 
 Each app has a `vite.config.ts` and a root `index.html`. The shared `config/vite.ts` sets up React, Tailwind, Module Federation, ports, and Zephyr for all four apps. The workspace scripts keep their existing names.
 
@@ -29,10 +29,10 @@ Set `VALOR_BASE_PORT` to move all four servers together, for example `VALOR_BASE
 
 | Application | Responsibility | Runtime contract |
 | --- | --- | --- |
-| Dashboard | Owns the repository, selected filters and layout | Loads three remotes and supplies the same filtered tasks to Tasks and Reports |
+| Dashboard | Owns the repository, selected filters and layout | Loads three remotes and supplies the same filtered tasks to Tasks and Summary |
 | Tasks | Task board, editor and assignments | Exposes `tasks/TasksFeature`. Sends task changes to the host through typed callbacks |
 | Filters | Status and assignee controls | Exposes `filters/FiltersFeature`. Sends selections to the host so the board and summary update together |
-| Reports | Displayed task total, completion and status counts | Exposes `reports/ReportsFeature`. Computes its summary from the tasks supplied by the host |
+| Summary | Displayed task total, completion and status counts | Exposes `summary/SummaryFeature`. Computes its summary from the tasks supplied by the host |
 
 Each remote is an independent Vite build. The dashboard downloads the remote manifests and JavaScript at runtime. The official `@module-federation/vite` plugin exposes and consumes the features as ES modules. React and React DOM are shared singletons. The colored outlines show the three federation imports. Add and Edit open a local dialog inside Tasks. Each feature has its own loading state, error boundary and retry action, so a single failed remote can recover while the others remain usable.
 
@@ -54,12 +54,12 @@ Use a committed checkout with a Git origin. Run the deploy scripts in order. On 
 
 ```sh
 npm run deploy:tasks
-npm run deploy:reports
+npm run deploy:summary
 npm run deploy:filters
 npm run deploy:dashboard
 ```
 
-`npm run deploy` runs all four in that order. The deploy path runs Vite with the Zephyr plugin and its default cloud integration. The host declares all three remotes under `zephyr:dependencies` as `workspace:*`. The deployment scripts use `vite build --mode zephyr`. In that mode, `vite-plugin-zephyr` sets up federation and resolves the remote manifests to deployed URLs. Local builds and dev servers use the federation plugin directly. To see federation in action, open the live dashboard and look for the Tasks, Reports, and Filters manifests and entry scripts in the browser’s Network panel. [Zephyr Vite integration](https://docs.zephyr-cloud.io/bundlers/vite) · [Remote dependencies](https://docs.zephyr-cloud.io/features/remote-dependencies)
+`npm run deploy` runs all four in that order. The deploy path runs Vite with the Zephyr plugin and its default cloud integration. The host declares all three remotes under `zephyr:dependencies` as `workspace:*`. The deployment scripts use `vite build --mode zephyr`. In that mode, `vite-plugin-zephyr` sets up federation and resolves the remote manifests to deployed URLs. Local builds and dev servers use the federation plugin directly. To see federation in action, open the live dashboard and look for the Tasks, Summary, and Filters manifests and entry scripts in the browser’s Network panel. [Zephyr Vite integration](https://docs.zephyr-cloud.io/bundlers/vite) · [Remote dependencies](https://docs.zephyr-cloud.io/features/remote-dependencies)
 
 The [previously published build list](https://github.com/rjborba/valor-renovation-dashboard/blob/52d9390/README.md#deploy-with-zephyr) documents the release that used a separate Editor remote.
 

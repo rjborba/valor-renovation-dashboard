@@ -14,7 +14,7 @@ export interface TaskFilters {
   assignee: string;
 }
 
-export interface ReportsFeatureProps {
+export interface SummaryFeatureProps {
   tasks: readonly RenovationTask[];
 }
 
@@ -24,7 +24,7 @@ export interface FiltersFeatureProps {
   onFiltersChange(filters: TaskFilters): void;
 }
 
-export interface TasksFeatureProps extends ReportsFeatureProps {
+export interface TasksFeatureProps extends SummaryFeatureProps {
   assignees: readonly string[];
   filters: TaskFilters;
   onAddTask(task: RenovationTask): Promise<void>;

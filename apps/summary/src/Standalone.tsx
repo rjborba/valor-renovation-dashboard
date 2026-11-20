@@ -1,5 +1,5 @@
 import { TaskBoard } from '@valor/task-board';
-import ReportsFeature from './ReportsFeature';
+import SummaryFeature from './SummaryFeature';
 
 export default function Standalone() {
   return (
@@ -9,7 +9,7 @@ export default function Standalone() {
         <TaskBoard>
           {({ tasks }) => (
             <div className="rounded-lg border border-border bg-card">
-              <ReportsFeature tasks={tasks} />
+              <SummaryFeature tasks={tasks} />
             </div>
           )}
         </TaskBoard>
