@@ -3,7 +3,7 @@ import {
   type RenovationTask,
   type ReportsFeatureProps,
 } from '@valor/contracts';
-import { Badge, Card, CardContent, Progress } from '@valor/ui';
+import { Badge, Card, CardContent, Progress, TaskStatusSymbol } from '@valor/ui';
 import '@valor/ui/styles.css';
 import { useId } from 'react';
 import { localDateKey, summarizeCommitments } from './summarizeCommitments';
@@ -95,7 +95,7 @@ export default function ReportsFeature({ tasks }: ReportsFeatureProps) {
           <dl className="m-0 grid grid-cols-3 gap-2 border-t border-border pt-3" aria-label="Task counts by status">
             {taskStatuses.map(status => (
               <div key={status} className="flex min-w-0 flex-col justify-between gap-1">
-                <dt className="text-xs text-muted-foreground">{status}</dt>
+                <dt><TaskStatusSymbol status={status} /></dt>
                 <dd className="m-0 text-base leading-none font-semibold tabular-nums">{formatCount.format(counts[status])}</dd>
               </div>
             ))}

@@ -31,7 +31,11 @@ test('creates, edits and deletes a shared task, persisting its owners, status an
   const row = board(page).getByRole('article', { name: description, exact: true });
   await expect(row).toContainText('Site lead');
   await expect(row).toContainText('Electrician');
-  await expect(row).toContainText('In progress');
+  const statusSymbol = row.getByRole('button', { name: 'Status: In progress', exact: true });
+  await statusSymbol.hover();
+  await expect(page.getByRole('tooltip')).toHaveText('In progress');
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('tooltip')).toHaveCount(0);
   await expectProgress(page, 0, 1);
   await expect(reports(page).getByText(description, { exact: true })).toBeVisible();
   const [created] = JSON.parse((await readStorage(page))!);
@@ -52,7 +56,7 @@ test('creates, edits and deletes a shared task, persisting its owners, status an
   await expectProgress(page, 1, 1);
   await page.reload();
   const edited = board(page).getByRole('article', { name: revised, exact: true });
-  await expect(edited).toContainText('Done');
+  await expect(edited.getByRole('button', { name: 'Status: Done', exact: true })).toBeVisible();
   await expectProgress(page, 1, 1);
   expect(JSON.parse((await readStorage(page))!)).toEqual([{
     id: created.id, description: revised, dueDate: '2027-04-12', status: 'Done', assignees: ['Site lead'],

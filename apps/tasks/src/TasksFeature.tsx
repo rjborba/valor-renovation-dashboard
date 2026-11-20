@@ -6,7 +6,7 @@ import {
   type TaskStatus,
   type TasksFeatureProps,
 } from '@valor/contracts';
-import { Badge, Button, Card, Label, NativeSelect, NativeSelectOption } from '@valor/ui';
+import { Badge, Button, Card, Label, NativeSelect, NativeSelectOption, TaskStatusSymbol } from '@valor/ui';
 import '@valor/ui/styles.css';
 import TaskDialog, { type TaskAction } from './TaskDialog';
 
@@ -16,12 +16,6 @@ const dateFormat = new Intl.DateTimeFormat('en-GB', {
   year: 'numeric',
   timeZone: 'UTC',
 });
-
-const statusStyles: Record<TaskStatus, string> = {
-  Open: 'bg-muted text-foreground',
-  'In progress': 'bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200',
-  Done: 'bg-emerald-50 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200',
-};
 
 function TaskRow({
   task,
@@ -52,9 +46,7 @@ function TaskRow({
         </ul>
       </div>
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1 @lg:justify-end">
-        <Badge variant="secondary" className={`rounded-md ${statusStyles[task.status]}`} data-status={task.status}>
-          {task.status}
-        </Badge>
+        <TaskStatusSymbol status={task.status} />
         <dl>
           <dt className="sr-only">Promised due date</dt>
           <dd className="text-xs font-medium whitespace-nowrap text-muted-foreground tabular-nums">

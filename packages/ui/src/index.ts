@@ -10,3 +10,4 @@ export { Label } from './components/label';
 export { NativeSelect, NativeSelectOption } from './components/native-select';
 export { Progress } from './components/progress';
 export { Textarea } from './components/textarea';
+export { TaskStatusSymbol } from './components/task-status-symbol';
