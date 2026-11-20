@@ -1,131 +1,104 @@
-import { purchases, type Purchase, type PurchaseItem } from './index';
+import { normalizeAssignees, tasks, taskStatuses, type RenovationTask, type TaskStatus } from './index';
 
-export interface PurchaseRepository {
-  list(): Promise<readonly Purchase[]>;
-  add(purchase: Purchase): Promise<readonly Purchase[]>;
-  update(purchase: Purchase): Promise<readonly Purchase[]>;
-  remove(id: string): Promise<readonly Purchase[]>;
+export interface TaskRepository {
+  list(): Promise<readonly RenovationTask[]>;
+  add(task: RenovationTask): Promise<readonly RenovationTask[]>;
+  update(task: RenovationTask): Promise<readonly RenovationTask[]>;
+  remove(id: string): Promise<readonly RenovationTask[]>;
 }
 
-export const purchaseStorageKey = 'valor:renovation-tracker:purchases:v1';
+export const taskStorageKey = 'valor:renovation-tracker:tasks:v1';
 
-type PurchaseStorage = Pick<Storage, 'getItem' | 'setItem'>;
-type PurchaseLocks = {
+type TaskStorage = Pick<Storage, 'getItem' | 'setItem'>;
+type TaskLocks = {
   request<T>(name: string, action: () => T): Promise<T>;
 };
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
 
 function isText(value: unknown): value is string {
   return typeof value === 'string' && value.trim().length > 0;
 }
 
-function isDate(value: unknown): boolean {
-  if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
-  const date = new Date(value);
-  return Number.isFinite(date.getTime()) && date.toISOString().slice(0, 10) === value;
+function isDueDate(value: unknown): value is string {
+  if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value) || value.startsWith('0000')) return false;
+  const time = Date.parse(value);
+  return Number.isFinite(time) && new Date(time).toISOString().slice(0, 10) === value;
 }
 
-function isCents(value: unknown): boolean {
-  return typeof value === 'number' && Number.isSafeInteger(value) && value >= 0;
+function isStatus(value: unknown): value is TaskStatus {
+  return taskStatuses.some(status => status === value);
 }
 
-function isItem(value: unknown): value is PurchaseItem {
-  return (
-    isRecord(value) &&
-    isText(value.name) &&
-    typeof value.quantity === 'number' &&
-    Number.isFinite(value.quantity) &&
-    value.quantity > 0 &&
-    isCents(value.unitPriceCents)
-  );
-}
-
-function isPurchase(value: unknown): value is Purchase {
-  return (
-    isRecord(value) &&
-    isText(value.id) &&
-    isDate(value.date) &&
-    isText(value.supplier) &&
-    isText(value.room) &&
-    isText(value.description) &&
-    isCents(value.paidCents) &&
-    isCents(value.discountCents) &&
-    Array.isArray(value.items) &&
-    Array.from(value.items).every(isItem)
-  );
-}
-
-function copyPurchase(purchase: Purchase): Purchase {
-  const record = structuredClone(purchase);
-  if (!isPurchase(record)) throw new Error('Invalid purchase.');
-  return record;
-}
-
-function readPurchases(raw: string): Purchase[] {
-  const rows: unknown = JSON.parse(raw);
-  if (!Array.isArray(rows) || !rows.every(isPurchase)) {
-    throw new Error('Invalid stored purchase data.');
+function parseTask(value: unknown): RenovationTask {
+  if (typeof value !== 'object' || !value) throw new Error('Invalid task.');
+  const row = value as Record<string, unknown>;
+  if (!isText(row.id) || !isText(row.description) || !isStatus(row.status) || !isDueDate(row.dueDate)) {
+    throw new Error('Invalid task description, ID, status or due date.');
   }
-  if (new Set(rows.map((row) => row.id)).size !== rows.length) {
-    throw new Error('Duplicate stored purchase ID.');
+  if (!Array.isArray(row.assignees) || !row.assignees.length || !Array.from(row.assignees).every(isText)) {
+    throw new Error('A task must have at least one named assignee.');
   }
+  return {
+    id: row.id,
+    description: row.description.trim(),
+    status: row.status,
+    dueDate: row.dueDate,
+    assignees: normalizeAssignees(row.assignees),
+  };
+}
+
+function readTasks(raw: string): RenovationTask[] {
+  const values: unknown = JSON.parse(raw);
+  if (!Array.isArray(values)) throw new Error('Invalid stored task data.');
+  const rows = values.map(parseTask);
+  if (new Set(rows.map(row => row.id)).size !== rows.length) throw new Error('Duplicate stored task ID.');
   return rows;
 }
 
-export function createPurchaseRepository(
-  storage?: PurchaseStorage,
-  locks?: PurchaseLocks,
-): PurchaseRepository {
+export function createTaskRepository(storage?: TaskStorage, locks?: TaskLocks): TaskRepository {
   async function access(
-    update: (current: readonly Purchase[]) => readonly Purchase[],
-  ): Promise<readonly Purchase[]> {
-    // Seed-on-read is also a mutation. Keep the whole read/modify/write inside the lock.
+    change: (current: readonly RenovationTask[]) => readonly RenovationTask[],
+  ): Promise<readonly RenovationTask[]> {
+    // Seeding is also a mutation. Read the latest records after acquiring the lock.
     function run() {
       const target = storage ?? window.localStorage;
-      const raw = target.getItem(purchaseStorageKey);
-      const current = raw === null ? structuredClone(purchases) : readPurchases(raw);
-      const next = update(current);
-      if (raw === null || next !== current) {
-        target.setItem(purchaseStorageKey, JSON.stringify(next));
-      }
+      const raw = target.getItem(taskStorageKey);
+      const current = raw === null ? tasks.map(parseTask) : readTasks(raw);
+      const next = change(current);
+      if (raw === null || next !== current) target.setItem(taskStorageKey, JSON.stringify(next));
       return next;
     }
 
     const manager = locks ?? (typeof window === 'undefined' ? undefined : window.navigator.locks);
-    return manager ? manager.request(purchaseStorageKey, run) : run();
+    return manager ? manager.request(taskStorageKey, run) : run();
   }
 
   return {
-    list: () => access((current) => current),
-    async add(purchase) {
-      const record = copyPurchase(purchase);
-      return access((current) => {
-        if (current.some((row) => row.id === record.id)) throw new Error('Duplicate purchase ID.');
+    list: () => access(current => current),
+    async add(task) {
+      const record = parseTask(task);
+      return access(current => {
+        if (current.some(row => row.id === record.id)) throw new Error('Duplicate task ID.');
         return [record, ...current];
       });
     },
-    async update(purchase) {
-      const record = copyPurchase(purchase);
-      return access((current) => {
-        const index = current.findIndex((row) => row.id === record.id);
-        if (index < 0) throw new Error('Purchase ID does not exist.');
+    async update(task) {
+      const record = parseTask(task);
+      return access(current => {
+        const index = current.findIndex(row => row.id === record.id);
+        if (index < 0) throw new Error('Task ID does not exist.');
         const rows = [...current];
         rows[index] = record;
         return rows;
       });
     },
     async remove(id) {
-      if (!isText(id)) throw new Error('Invalid purchase ID.');
-      return access((current) => {
-        if (!current.some((row) => row.id === id)) return current;
-        return current.filter((row) => row.id !== id);
+      if (!isText(id)) throw new Error('Invalid task ID.');
+      return access(current => {
+        const rows = current.filter(row => row.id !== id);
+        return rows.length === current.length ? current : rows;
       });
     },
   };
 }
 
-// Resolve browser APIs on first use so the package can also be imported in Node.
-export const purchaseRepository = createPurchaseRepository();
+export const taskRepository = createTaskRepository();

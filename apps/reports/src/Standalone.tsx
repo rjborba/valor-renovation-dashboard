@@ -1,4 +1,4 @@
-import { PurchaseLedger } from '@valor/ledger';
+import { TaskBoard } from '@valor/task-board';
 import ReportsFeature from './ReportsFeature';
 
 export default function Standalone() {
@@ -6,9 +6,9 @@ export default function Standalone() {
     <main className="valor-reports-page">
       <div className="valor-reports-page__content">
         <h1>Renovation Tracker</h1>
-        <PurchaseLedger>
-          {(ledger) => <ReportsFeature purchases={ledger.purchases} />}
-        </PurchaseLedger>
+        <TaskBoard>
+          {({ tasks }) => <ReportsFeature tasks={tasks} />}
+        </TaskBoard>
       </div>
     </main>
   );

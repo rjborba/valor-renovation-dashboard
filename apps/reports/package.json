@@ -1,6 +1,6 @@
 {
   "name": "reports",
-  "version": "1.1.0",
+  "version": "2.0.0",
   "private": true,
   "scripts": {
     "dev": "rspack serve --mode development",
@@ -11,6 +11,6 @@
     "@valor/contracts": "1.0.0",
     "react": "19.3.1",
     "react-dom": "19.3.1",
-    "@valor/ledger": "1.0.0"
+    "@valor/task-board": "1.0.0"
   }
 }

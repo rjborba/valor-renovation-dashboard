@@ -1,5 +1,5 @@
 {
-  "name": "expenses",
+  "name": "tasks",
   "version": "1.0.0",
   "private": true,
   "scripts": {
@@ -9,8 +9,8 @@
   },
   "dependencies": {
     "@valor/contracts": "1.0.0",
+    "@valor/task-board": "1.0.0",
     "react": "19.3.1",
-    "react-dom": "19.3.1",
-    "@valor/ledger": "1.0.0"
+    "react-dom": "19.3.1"
   }
 }

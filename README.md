@@ -1,90 +1,68 @@
 # Renovation Tracker
 
-Review renovation purchases and track spending by room or supplier. Use **Add purchase** to record an expense. Expand a receipt to edit or delete it. Filtering by room or supplier updates the spending summary. Amounts are in Brazilian reais (BRL). No account or backend is required to use the dashboard.
+Track what each person on a renovation has promised and when it is due. A task can belong to several people or trades. For example, the architect and electrician can share one task to confirm the kitchen island outlets before the stone contractor cuts the countertop.
 
-[Open the renovation tracker](https://t-web-latest-rodrigoj-borba-dashboard-valor-renovatio-cffc52-ze.zephyrcloud.app/) · [Watch the captioned demo (MP4)](https://github.com/rjborba/valor-renovation-dashboard/releases/download/federated-modules-demo/renovation-tracker-demo.mp4)
+[Open Renovation Tracker](https://t-web-latest-rodrigoj-borba-dashboard-valor-renovatio-cffc52-ze.zephyrcloud.app/)
+
+## Using the board
+
+Add a task with a brief description, a promised due date, and one or more responsible people. Use a name or trade that makes sense for your site. Set its status to **Open**, **In progress**, or **Done**. Edit the task when a commitment changes, or delete it when it no longer belongs on the board.
+
+Filter by assignee and status together to prepare for a conversation with a contractor. The progress summary uses the same filtered tasks. Jointly assigned work counts once, and a task becomes overdue the day after its promised date if it is still unfinished.
 
 ## Run locally
 
-Use Node 22.12 or later and npm. From the repository root:
+Use Node 22.12 or later and npm.
 
 ```sh
 npm ci
 npm run dev
 ```
 
-Turborepo starts the dashboard on <http://localhost:3000>, Expenses on port 3001, and Reports on port 3002. To start one app, use `npm run dev:dashboard`, `npm run dev:expenses`, or `npm run dev:reports`.
+Turborepo runs the dashboard on <http://localhost:3000>, Tasks on <http://localhost:3001>, and Reports on <http://localhost:3002>. Each remote also works as a standalone app. Use `npm run dev:dashboard`, `npm run dev:tasks`, or `npm run dev:reports` to start a single workspace.
 
-Run `npm run typecheck` and `npm test` to check the workspace. Use `npm run build:local` for production bundles. Turbo caches each app’s `dist/` and restores it when the app and its build inputs are unchanged.
+## How Module Federation works here
 
-## How the applications fit together
-
-| Application | Owns | Runtime contract |
+| Application | Responsibility | Runtime contract |
 | --- | --- | --- |
-| Dashboard | Page layout, purchase repository, selected room and supplier, loading and recovery | Loads both remotes and passes the filtered purchases to each |
-| Expenses | Filter controls, purchase editor, ledger and receipt details | Exposes `expenses/ExpensesFeature` and requests changes through host callbacks |
-| Reports | Paid total, purchase count, spending by room | Exposes `reports/ReportsFeature` and derives every metric from its purchases prop |
+| Dashboard | Owns the repository, selected filters and layout | Loads both feature modules and passes the same filtered tasks to each |
+| Tasks | Task board, editor, assignments and filters | Exposes `tasks/TasksFeature`. Sends edits and filter changes to the host through typed callbacks |
+| Reports | Progress and outstanding commitments | Exposes `reports/ReportsFeature`. Computes its summary from the tasks supplied by the host |
 
-The two remote features are independent Rspack builds. The browser retrieves their manifests and JavaScript at runtime. React and React DOM are shared singletons. The shell owns the filter state, so changes reach both features without a cross-application event bus. Each remote has its own Suspense and error boundary.
+Each remote is an independent Rspack build. The dashboard downloads the remote manifests and JavaScript at runtime. React and React DOM are shared singletons. The colored outlines show the exact federation imports. Each feature has its own loading state, error boundary and retry action, so a single failed remote can recover while the other remains usable.
 
-The shared TypeScript contract lives in `packages/contracts`. Fixtures use integer cents. Aggregation sums the amount actually paid on each receipt, which already includes its discount.
+## Where tasks are saved
 
-## Purchase storage
+The first visit seeds five fictional example tasks. Changes are saved in this browser profile under `valor:renovation-tracker:tasks:v1`. An empty board stays empty after reload. The previous purchase store is left intact.
 
-The first visit seeds eight sample receipts in browser localStorage. Adding, editing, and deleting a purchase updates Reports after the write succeeds. An empty ledger stays empty after refresh. The amount paid is the receipt total after discounts. Optional line items and the discount field describe that payment.
+Use the same dashboard URL and browser profile to return to your tasks. Each origin has separate storage, including each standalone app. Assigning someone records who is responsible. Sharing updates across devices or between people would require a backend.
 
-Open the same dashboard URL in the same browser profile to return to your ledger. Each origin has its own storage, including each standalone app and each version-specific Zephyr URL. Clearing site data removes that origin’s ledger.
-
-The host injects a `PurchaseRepository` into `PurchaseLedger`. Its four asynchronous methods (`list`, `add`, `update`, and `remove`) return the current purchase list. To use a database, implement that contract with calls to your backend and pass the adapter through the dashboard’s `repository` prop. Expenses and Reports only receive data and callbacks. The browser integration test in `tests/injected-host.spec.ts` exercises that substitution.
+The host passes a `TaskRepository` to the shared `TaskBoard` controller. The asynchronous `list`, `add`, `update`, and `remove` methods return the current records. A backend adapter can implement that interface and be passed through the dashboard’s `repository` prop. Both remote components receive ordinary data and callbacks. The injected-host browser test exercises this replacement.
 
 ## Deploy with Zephyr
 
-Start from a committed checkout with a Git origin. Run the following commands in order and complete the browser sign-in on your first deployment.
+Use a committed checkout with a Git origin. Run the deploy scripts in order. On the first deployment, complete Zephyr sign-in from an interactive terminal.
 
 ```sh
-npm run deploy:expenses
+npm run deploy:tasks
 npm run deploy:reports
 npm run deploy:dashboard
 ```
 
-The deploy scripts call Rspack directly with the Zephyr plugin so each invocation publishes a build. Zephyr uses its default cloud integration. The dashboard declares both remote names under `zephyr:dependencies` with `workspace:*`. Zephyr resolves those names at build time using the Git and deployment context. Open the dashboard URL from the build and inspect the network requests for both remotes.
+`npm run deploy` runs all three in that order. The deploy path runs Rspack with the Zephyr plugin and its default cloud integration. The host declares both remotes under `zephyr:dependencies` as `workspace:*`. During the host build, Zephyr resolves the remote manifests to deployed URLs. To see federation in action, open the live dashboard and look for the Tasks and Reports manifests and entry scripts in the browser’s Network panel. [Zephyr Rspack integration](https://docs.zephyr-cloud.io/bundlers/rspack) · [Remote dependencies](https://docs.zephyr-cloud.io/features/remote-dependencies)
 
-[Zephyr Rspack guide](https://docs.zephyr-cloud.io/bundlers/rspack) · [Remote dependency resolution](https://docs.zephyr-cloud.io/features/remote-dependencies)
-
-## Browser checks
-
-With `npm run dev` running, open a second terminal:
+## Verify
 
 ```sh
-npx playwright install chromium
-npx playwright test
+npm run typecheck
+npm test
+npm run build:local
 ```
 
-To use an installed Google Chrome instead, run `PLAYWRIGHT_CHROMIUM_CHANNEL=chrome npx playwright test`. The tests cover the remote network origins, responsive layout, filtering across features, receipt details, an empty intersection, and recovery after an individual remote fails. The unit tests check arithmetic in cents and the intersection of the filters.
+The browser tests cover task changes, persistence, shared filters, independent remote requests and recovery. Run `npx playwright install chromium` once, then `npm run test:e2e`. Playwright starts isolated servers on ports 4300–4302. To use an installed Google Chrome, set `PLAYWRIGHT_CHROMIUM_CHANNEL=chrome`.
 
-## Independent release and rollback
+## Assignment feedback
 
-The stable dashboard URL currently serves [Dashboard build 14](https://rodrigoj-borba-14-dashboard-valor-renovation-dash-22765fb6a-ze.zephyrcloud.app/), with [Expenses build 11](https://rodrigoj-borba-11-expenses-valor-renovation-dashb-4c84ad530-ze.zephyrcloud.app/) and [Reports build 12](https://rodrigoj-borba-12-reports-valor-renovation-dashbo-b6b9ca45d-ze.zephyrcloud.app/). The table below records the earlier release exercise on Dashboard build 5, where we switched Reports from v1 to v2 and back to v1.
+The default cloud integration supplied a public URL for each build without a separate hosting setup. The remote URLs in the build output made it possible to verify which applications the host loaded. Two details mattered during implementation. The first login needed an interactive terminal. A version-specific dashboard URL can also consume moving remote tags, so recording the remote builds matters when reproducing a rollout. The original [release exercise](https://github.com/rjborba/valor-renovation-dashboard/blob/57361e2/README.md#independent-release-and-rollback) demonstrates switching and rolling back one remote independently.
 
-| Component | Verified Zephyr deployment | Source |
-| --- | --- | --- |
-| Dashboard | [Build 5](https://rodrigoj-borba-5-dashboard-valor-renovation-dashb-ea051498e-ze.zephyrcloud.app/) | [2fdd0e1](https://github.com/rjborba/valor-renovation-dashboard/commit/2fdd0e1) |
-| Expenses | [Build 3](https://rodrigoj-borba-3-expenses-valor-renovation-dashbo-52fd55d98-ze.zephyrcloud.app/) | [2fdd0e1](https://github.com/rjborba/valor-renovation-dashboard/commit/2fdd0e1) |
-| Reports v1 | [Build 4](https://rodrigoj-borba-4-reports-valor-renovation-dashboa-8ab2e77a2-ze.zephyrcloud.app/) | [2fdd0e1](https://github.com/rjborba/valor-renovation-dashboard/commit/2fdd0e1) |
-| Reports v2 | [Build 6](https://rodrigoj-borba-6-reports-valor-renovation-dashboa-0ee72f2cb-ze.zephyrcloud.app/) | [76831c4](https://github.com/rjborba/valor-renovation-dashboard/commit/76831c4) |
-
-1. The initial deployment uploaded Expenses, Reports and then Dashboard. Zephyr printed a separate managed-cloud URL for each app. In the host build output, both workspace dependencies resolved to tag URLs.
-2. Published the average-purchase row with `npm run deploy:reports`. The existing Dashboard build picked up Reports 1.1.0 build 6 through its Reports tag. A fresh browser session showed the new row.
-3. In the Zephyr dashboard, opened **Reports → DevOps → Tags → web_latest_rodrigoj_borba**. Added an **AND** condition with **Version is 1.0.0-main.rodrigoj_borba.4** and saved. This pins the Reports tag used by the host to the original build. Remove that specific condition to resume following the latest matching build.
-4. A fresh browser session on the same dashboard URL showed v1 again. The Reports JavaScript hash went from `2043318afe9b2d63` to `37dbf676aa64cfed` and back. The Expenses hash stayed `3422915700d4fcd6`. Filtering to **Kitchen + Clay Studio** returned one receipt for **R$ 1.166,40** before, during, and after the release.
-
-## Implementation and assignment feedback
-
-A filter change makes the federation boundary visible. Expenses raises the change to the host. The host passes both features the same filtered records, and Reports recalculates from those records. Passing a small typed contract lets each team release a complete feature independently. Refreshing resets the filters and reloads the saved ledger.
-
-The default Zephyr integration made the first release quick once the repository had a Git origin. The build output included the resolved remote URLs, which helped verify the public host. Two parts took extra investigation:
-
-- The first sign-in required an interactive terminal. A non-interactive attempt stopped before the browser login could begin.
-- A versioned dashboard URL can still load a moving remote tag. Showing the selector and the currently served build side by side in the deployment output would make independent rollouts and rollbacks easier to explain.
-
-The recovery test also caught an integration detail. React's lazy loader and the federation runtime can both retain a failed load. Retry clears the affected remote registration and loads it again, preserving the other feature and the host's filter state.
+The recovery test exposed another detail. React’s lazy loader and the federation runtime can both retain a failed load. Retry clears the affected remote registration and reloads that feature while preserving the host’s filter state.

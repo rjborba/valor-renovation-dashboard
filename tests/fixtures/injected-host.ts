@@ -1,15 +1,18 @@
-import type { Purchase } from '@valor/contracts';
-import type { PurchaseRepository } from '@valor/contracts/storage';
+import type { RenovationTask } from '@valor/contracts';
+import type { TaskRepository } from '@valor/contracts/storage';
 
-let rows: readonly Purchase[] = [{
-  id: 'memory-only', description: 'In-memory receipt', date: '2026-11-20',
-  supplier: 'Test supplier', room: 'Workshop', paidCents: 777, discountCents: 0, items: [],
+let rows: readonly RenovationTask[] = [{
+  id: 'memory-only',
+  description: 'Inspect the injected board',
+  status: 'Open',
+  dueDate: '2027-04-10',
+  assignees: ['Inspector'],
 }];
 
-const repository: PurchaseRepository = {
+const repository: TaskRepository = {
   async list() { return rows; },
-  async add(purchase) { return rows = [purchase, ...rows]; },
-  async update(purchase) { return rows = rows.map(row => row.id === purchase.id ? purchase : row); },
+  async add(task) { return rows = [task, ...rows]; },
+  async update(task) { return rows = rows.map(row => row.id === task.id ? task : row); },
   async remove(id) { return rows = rows.filter(row => row.id !== id); },
 };
 

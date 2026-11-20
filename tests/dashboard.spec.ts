@@ -1,118 +1,110 @@
 import { expect, test } from '@playwright/test';
+import { reportsOrigin, tasksOrigin } from './servers';
+import { board, expectProgress, reports } from './task-ui';
 
-const expensesOrigin = 'http://localhost:3001';
-const reportsOrigin = 'http://localhost:3002';
-
-test('loads both federated features from their own origins and stacks them on mobile', async ({ page }) => {
-  const manifests = [expensesOrigin, reportsOrigin].map(origin =>
-    page.waitForResponse(response => response.url() === `${origin}/mf-manifest.json` && response.ok()),
+test('loads both independent modules over HTTP and stacks them on mobile', async ({ page }) => {
+  const assets = [tasksOrigin, reportsOrigin].flatMap(origin =>
+    ['mf-manifest.json', 'remoteEntry.js'].map(file =>
+      page.waitForResponse(response => response.url() === `${origin}/${file}` && response.ok()),
+    ),
   );
-  const entries = [expensesOrigin, reportsOrigin].map(origin =>
-    page.waitForResponse(response => response.url() === `${origin}/remoteEntry.js` && response.ok()),
-  );
-
-  await page.goto('/');
-  await Promise.all([...manifests, ...entries]);
-  const expenses = page.getByRole('region', { name: 'Purchase ledger' });
-  const reports = page.getByRole('region', { name: 'Spending summary' });
+  await Promise.all([page.goto('/'), ...assets]);
   for (const [moduleId, heading] of [
-    ['expenses/ExpensesFeature', 'Purchase ledger'],
-    ['reports/ReportsFeature', 'Spending summary'],
+    ['tasks/TasksFeature', 'Task board'],
+    ['reports/ReportsFeature', 'Commitment progress'],
   ]) {
     const frame = page.getByRole('group', { name: `Federated module ${moduleId}`, exact: true });
-    await expect(frame.getByText(moduleId, { exact: true })).toBeVisible();
-    await expect(frame.getByRole('heading', { name: heading })).toBeVisible();
+    await expect(frame.getByRole('heading', { name: heading, exact: true })).toBeVisible();
   }
-  await expect(expenses).toBeVisible();
-  await expect(reports.getByText('R$ 6.820,40')).toBeVisible();
-  const desktopExpenses = (await expenses.boundingBox())!;
-  const desktopReports = (await reports.boundingBox())!;
-  expect(desktopReports.x).toBeGreaterThanOrEqual(desktopExpenses.x + desktopExpenses.width);
+  const tasksBox = (await board(page).boundingBox())!;
+  const reportsBox = (await reports(page).boundingBox())!;
+  expect(reportsBox.x).toBeGreaterThanOrEqual(tasksBox.x + tasksBox.width);
 
   await page.setViewportSize({ width: 375, height: 812 });
-  const mobileExpenses = (await expenses.boundingBox())!;
-  const mobileReports = (await reports.boundingBox())!;
-  expect(mobileReports.x).toBeCloseTo(mobileExpenses.x);
-  expect(mobileReports.y).toBeGreaterThanOrEqual(mobileExpenses.y + mobileExpenses.height);
+  const mobileTasks = (await board(page).boundingBox())!;
+  const mobileReports = (await reports(page).boundingBox())!;
+  expect(mobileReports.x).toBeCloseTo(mobileTasks.x);
+  expect(mobileReports.y).toBeGreaterThanOrEqual(mobileTasks.y + mobileTasks.height);
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(375);
-
-  await expenses.getByRole('combobox', { name: 'Room', exact: true }).selectOption('Kitchen');
-  await expenses.getByRole('combobox', { name: 'Supplier', exact: true }).selectOption('Clay Studio');
-  await expect(expenses.getByRole('status')).toHaveText('1 purchase');
-  await expect(reports.getByRole('listitem')).toHaveCount(1);
-  await expect(reports.getByRole('listitem').getByText('R$ 1.166,40')).toBeVisible();
 });
 
-test('retries an unavailable reports manifest and keeps both chosen filters', async ({ page }) => {
-  const manifestUrl = `${reportsOrigin}/mf-manifest.json`;
-  await page.route(manifestUrl, route => route.abort('connectionfailed'));
+test('status and assignee intersect across the board and summary, including an empty result', async ({ page }) => {
+  await page.clock.setFixedTime(new Date('2026-11-24T12:00:00Z'));
   await page.goto('/');
+  const filters = board(page).getByRole('group', { name: 'Task filters' });
+  const status = filters.getByRole('combobox', { name: 'Status', exact: true });
+  const assignee = filters.getByRole('combobox', { name: 'Assignee', exact: true });
+  await expectProgress(page, 1, 5);
+  const counts = reports(page).getByLabel('Task counts by status');
+  await expect(counts.getByRole('definition')).toHaveText(['2', '2', '1']);
+  const overdue = reports(page).getByRole('list', { name: 'Overdue' });
+  await expect(overdue.getByRole('listitem')).toHaveCount(1);
+  await expect(overdue.locator('time')).toHaveAttribute('datetime', '2026-11-23');
+  await expect(reports(page).getByRole('list', { name: 'Upcoming' })).toContainText('Due today');
+  await assignee.selectOption({ label: 'Electrician' });
+  await expect(board(page).getByRole('article')).toHaveCount(2);
+  await expectProgress(page, 1, 2);
+  await status.selectOption({ label: 'Done' });
+  await expect(board(page).getByRole('article')).toHaveCount(1);
+  await expect(board(page).getByRole('article')).toContainText('bedroom reading light');
+  await expectProgress(page, 1, 1);
+  await expect(counts.getByRole('definition')).toHaveText(['0', '0', '1']);
+  await expect(reports(page).getByText('No outstanding deadlines.')).toBeVisible();
+  await assignee.selectOption({ label: 'Engineer' });
+  await expect(board(page).getByRole('article')).toHaveCount(0);
+  await expectProgress(page, 0, 0);
+  await board(page).getByRole('button', { name: 'Clear filters' }).click();
+  await expect(board(page).getByRole('article')).toHaveCount(5);
+  await expectProgress(page, 1, 5);
+});
 
-  const alert = page.getByRole('alert');
-  await expect(alert.getByRole('heading', { name: 'Reports is unavailable' })).toBeVisible();
-  const expenses = page.getByRole('region', { name: 'Purchase ledger' });
-  const room = expenses.getByRole('combobox', { name: 'Room', exact: true });
-  const supplier = expenses.getByRole('combobox', { name: 'Supplier', exact: true });
-  await room.selectOption('Kitchen');
-  await supplier.selectOption('Clay Studio');
-  await expect(expenses.getByRole('status')).toHaveText('1 purchase');
-
-  const retry = alert.getByRole('button', { name: 'Retry Reports' });
-  const failedRequest = page.waitForEvent('requestfailed', { predicate: request => request.url() === manifestUrl });
-  await retry.focus();
-  await retry.press('Enter');
-  await failedRequest;
+test('retries a missing Reports manifest and keeps the chosen task filters', async ({ page }) => {
+  const url = `${reportsOrigin}/mf-manifest.json`;
+  await page.route(url, route => route.abort('connectionfailed'));
+  await page.goto('/');
+  const retry = page.getByRole('alert').getByRole('button', { name: 'Retry Reports' });
   await expect(retry).toBeVisible();
+  const status = board(page).getByRole('combobox', { name: 'Status', exact: true });
+  const assignee = board(page).getByRole('combobox', { name: 'Assignee', exact: true });
+  await status.selectOption('In progress');
+  await assignee.selectOption('Electrician');
+  await expect(board(page).getByRole('article')).toHaveCount(1);
 
-  await page.unroute(manifestUrl);
-  const restoredManifest = page.waitForResponse(response => response.url() === manifestUrl && response.ok());
-  await retry.click();
-  await restoredManifest;
-  const reports = page.getByRole('region', { name: 'Spending summary' });
-  await expect(reports.getByRole('listitem')).toHaveCount(1);
-  await expect(reports.getByRole('listitem')).toHaveText(/Kitchen\s+R\$\s+1\.166,40/);
-  await expect(alert).toHaveCount(0);
-  await expect(room).toHaveValue('Kitchen');
-  await expect(supplier).toHaveValue('Clay Studio');
+  await Promise.all([
+    page.waitForEvent('requestfailed', { predicate: request => request.url() === url }),
+    retry.press('Enter'),
+  ]);
+  await expect(retry).toBeVisible();
+  await page.unroute(url);
+  await Promise.all([
+    page.waitForResponse(response => response.url() === url && response.ok()),
+    retry.click(),
+  ]);
+  await expectProgress(page, 0, 1);
+  await expect(status).toHaveValue('In progress');
+  await expect(assignee).toHaveValue('Electrician');
+  await expect(retry).toHaveCount(0);
 });
 
-test('retries the expenses remote entry while reports stays available', async ({ page }) => {
-  const entryUrl = `${expensesOrigin}/remoteEntry.js`;
-  await page.route(entryUrl, route => route.abort('connectionfailed'));
+test('recovers the Tasks entry while Reports continues serving the saved board', async ({ page }) => {
+  const url = `${tasksOrigin}/remoteEntry.js`;
+  await page.route(url, route => route.abort('connectionfailed'));
   await page.goto('/');
-
-  const alert = page.getByRole('alert');
-  await expect(alert.getByRole('heading', { name: 'Expenses is unavailable' })).toBeVisible();
-  const reports = page.getByRole('region', { name: 'Spending summary' });
-  await expect(reports.getByText('R$ 6.820,40')).toBeVisible();
-
-  await page.unroute(entryUrl);
-  const restoredEntry = page.waitForResponse(response => response.url() === entryUrl && response.ok());
-  await alert.getByRole('button', { name: 'Retry Expenses' }).click();
-  await restoredEntry;
-  const expenses = page.getByRole('region', { name: 'Purchase ledger' });
-  await expect(expenses.getByRole('status')).toHaveText('8 purchases');
-  await expect(alert).toHaveCount(0);
-  await expenses.getByRole('combobox', { name: 'Room', exact: true }).selectOption('Bathroom');
-  await expect(reports.getByRole('listitem')).toHaveText(/Bathroom\s+R\$\s+2\.041,00/);
+  const retry = page.getByRole('alert').getByRole('button', { name: 'Retry Tasks' });
+  await expect(retry).toBeVisible();
+  await expectProgress(page, 1, 5);
+  await page.unroute(url);
+  await Promise.all([
+    page.waitForResponse(response => response.url() === url && response.ok()),
+    retry.click(),
+  ]);
+  await expect(board(page).getByRole('article')).toHaveCount(5);
+  await expect(retry).toHaveCount(0);
 });
 
-test('shows a discounted receipt, empty intersection, and reset in both features', async ({ page }) => {
-  await page.goto('/');
-  const ledger = page.getByRole('region', { name: 'Purchase ledger' });
-  const reports = page.getByRole('region', { name: 'Spending summary' });
-  const room = ledger.getByRole('combobox', { name: 'Room', exact: true });
-  await room.selectOption('Kitchen');
-  await ledger.getByRole('combobox', { name: 'Supplier', exact: true }).selectOption('Clay Studio');
-  await ledger.locator('summary').first().press('Enter');
-  const receipt = ledger.locator('details[open]');
-  await expect(receipt.getByRole('table', { name: 'Line items' })).toContainText('Glazed field tile');
-  await expect(receipt.locator('dl')).toHaveText(/Discount.*129,60.*Actual paid.*1\.166,40/);
-  await room.selectOption('Bedroom');
-  await expect(ledger.getByText('No matching purchases')).toBeVisible();
-  await expect(reports.getByText('No purchases to show.')).toBeVisible();
-  await expect(reports.locator('dd').first()).toHaveText(/R\$\s*0,00/);
-  await ledger.getByRole('button', { name: 'Clear filters' }).click();
-  await expect(ledger.getByRole('status')).toHaveText('8 purchases');
-  await expect(reports.locator('dd').first()).toHaveText(/R\$\s*6\.820,40/);
+test('each remote renders directly with its own standalone wrapper', async ({ page }) => {
+  await page.goto(tasksOrigin);
+  await expect(board(page).getByRole('article')).toHaveCount(5);
+  await page.goto(reportsOrigin);
+  await expectProgress(page, 1, 5);
 });

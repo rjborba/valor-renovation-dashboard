@@ -7,12 +7,12 @@ import {
   type ComponentType,
   type ReactNode,
 } from 'react';
-import { PurchaseLedger } from '@valor/ledger';
-import type { PurchaseRepository } from '@valor/contracts/storage';
+import { TaskBoard } from '@valor/task-board';
+import type { TaskRepository } from '@valor/contracts/storage';
 import { retryRemote } from './retryRemote';
 import './dashboard.css';
 
-const loadExpenses = () => import('expenses/ExpensesFeature');
+const loadTasks = () => import('tasks/TasksFeature');
 const loadReports = () => import('reports/ReportsFeature');
 
 class FeatureBoundary extends Component<
@@ -83,7 +83,7 @@ function RemoteFeature<P extends object>({
 export default function App({
   repository,
 }: {
-  repository?: PurchaseRepository;
+  repository?: TaskRepository;
 }) {
   return (
     <>
@@ -101,21 +101,18 @@ export default function App({
       <main id="overview" className="shell">
         <div className="intro">
           <h1>
-            Spending overview<span>.</span>
+            Renovation tasks<span>.</span>
           </h1>
-          <p className="period">
-            <span>Reporting period</span>All dates
-          </p>
         </div>
-        <PurchaseLedger repository={repository}>
-          {(ledger) => (
+        <TaskBoard repository={repository}>
+          {(board) => (
             <div className="features">
               <div>
                 <RemoteFeature
-                  name="Expenses"
-                  moduleId="expenses/ExpensesFeature"
-                  load={loadExpenses}
-                  featureProps={ledger}
+                  name="Tasks"
+                  moduleId="tasks/TasksFeature"
+                  load={loadTasks}
+                  featureProps={board}
                 />
               </div>
               <aside>
@@ -123,16 +120,16 @@ export default function App({
                   name="Reports"
                   moduleId="reports/ReportsFeature"
                   load={loadReports}
-                  featureProps={{ purchases: ledger.purchases }}
+                  featureProps={{ tasks: board.tasks }}
                 />
               </aside>
             </div>
           )}
-        </PurchaseLedger>
+        </TaskBoard>
       </main>
       <footer className="shell">
         <span>Renovation Tracker</span>
-        <span>Brazilian reais (BRL)</span>
+        <span>Saved in this browser</span>
       </footer>
     </>
   );

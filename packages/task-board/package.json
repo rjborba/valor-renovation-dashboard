@@ -1,9 +1,9 @@
 {
-  "name": "@valor/ledger",
+  "name": "@valor/task-board",
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "exports": "./src/PurchaseLedger.tsx",
+  "exports": "./src/TaskBoard.tsx",
   "dependencies": { "@valor/contracts": "1.0.0" },
   "peerDependencies": { "react": "^19.3.1" }
 }

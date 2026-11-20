@@ -1,31 +1,21 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { purchases, filterPurchases, emptyFilters } from './index';
+import { emptyFilters, filterTasks, normalizeAssignees, tasks, taskStatuses } from './index';
 
-test('fictional receipt totals reconcile after discounts', () => {
-  for (const p of purchases)
-    assert.equal(
-      p.items.reduce((n, i) => n + i.quantity * i.unitPriceCents, 0) -
-        p.discountCents,
-      p.paidCents,
-      p.id,
-    );
-  assert.equal(
-    purchases.reduce((n, p) => n + p.paidCents, 0),
-    682040,
-  );
+test('seed tasks cover the four trades, all statuses and shared responsibility', () => {
+  assert.deepEqual(new Set(tasks.map(task => task.status)), new Set(taskStatuses));
+  assert.deepEqual(new Set(tasks.flatMap(task => task.assignees)),
+    new Set(['Architect', 'Engineer', 'Electrician', 'Stone contractor']));
+  assert.ok(tasks.some(task => task.assignees.length > 1));
 });
-test('room and supplier intersect, and clearing restores the ledger', () => {
-  assert.deepEqual(
-    filterPurchases(purchases, {
-      room: 'Kitchen',
-      supplier: 'Clay Studio',
-    }).map((p) => p.id),
-    ['FL-008'],
-  );
-  assert.deepEqual(
-    filterPurchases(purchases, { room: 'Bedroom', supplier: 'Clay Studio' }),
-    [],
-  );
-  assert.deepEqual(filterPurchases(purchases, emptyFilters), purchases);
+
+test('joint owners match either assignee and status filters intersect', () => {
+  assert.deepEqual(filterTasks(tasks, { status: 'In progress', assignee: 'electrician' }).map(t => t.id), ['RT-001']);
+  assert.deepEqual(filterTasks(tasks, { status: '', assignee: 'Architect' }).map(t => t.id), ['RT-001', 'RT-005']);
+  assert.deepEqual(filterTasks(tasks, { status: 'Done', assignee: 'Engineer' }), []);
+  assert.deepEqual(filterTasks(tasks, emptyFilters), tasks);
+});
+
+test('assignee options retain the first spelling and order after trimming', () => {
+  assert.deepEqual(normalizeAssignees([' Lia ', 'ANA', 'lia', 'Ana ', '  ']), ['Lia', 'ANA']);
 });

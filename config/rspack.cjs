@@ -4,6 +4,7 @@ const { ModuleFederationPlugin } = require('@module-federation/enhanced/rspack')
 
 module.exports = function createConfig(context, port, federation) {
   return (env) => {
+    const scriptFilename = env?.RSPACK_SERVE ? '[name].js' : '[name].[contenthash].js';
     const config = {
       context,
       entry: './src/index.ts',
@@ -12,8 +13,8 @@ module.exports = function createConfig(context, port, federation) {
         path: path.join(context, 'dist'),
         uniqueName: federation.name,
         publicPath: 'auto',
-        filename: '[name].[contenthash].js',
-        chunkFilename: '[name].[contenthash].js',
+        filename: scriptFilename,
+        chunkFilename: scriptFilename,
         clean: true,
       },
       resolve: { extensions: ['.tsx', '.ts', '.jsx', '.js', '.json'] },

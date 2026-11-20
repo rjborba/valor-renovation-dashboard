@@ -1,8 +1,8 @@
 const createConfig = require('../../config/rspack.cjs');
 
 module.exports = createConfig(__dirname, 3001, {
-  name: 'expenses',
+  name: 'tasks',
   exposes: {
-    './ExpensesFeature': './src/ExpensesFeature.tsx',
+    './TasksFeature': './src/TasksFeature.tsx',
   },
 });

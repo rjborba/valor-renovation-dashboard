@@ -53,23 +53,8 @@ select {
   );
   transform: rotate(-5deg);
 }
-.period {
-  font-size: 13px;
-  font-weight: 600;
-}
 .intro {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 20px;
   padding: clamp(35px, 5vw, 76px) 0 35px;
-}
-.period span {
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.14em;
-  color: #526a60;
 }
 h1 {
   font:
@@ -80,14 +65,6 @@ h1 {
 }
 h1 span {
   color: #ad7946;
-}
-.period {
-  margin: 0 0 5px;
-  text-align: right;
-}
-.period span {
-  display: block;
-  margin-bottom: 8px;
 }
 .features {
   display: grid;
@@ -188,17 +165,7 @@ footer span:first-child {
 }
 @media (max-width: 550px) {
   .intro {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 14px;
     padding-bottom: 24px;
-  }
-  .period {
-    text-align: left;
-  }
-  .period span {
-    display: inline;
-    margin-right: 8px;
   }
   .wordmark {
     font-size: 20px;
