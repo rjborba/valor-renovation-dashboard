@@ -7,11 +7,11 @@
     "packages/*"
   ],
   "scripts": {
-    "dev": "concurrently --kill-others --names dashboard,expenses,reports \"npm run dev:dashboard\" \"npm run dev:expenses\" \"npm run dev:reports\"",
-    "dev:dashboard": "npm run dev --workspace dashboard",
-    "dev:expenses": "npm run dev --workspace expenses",
-    "dev:reports": "npm run dev --workspace reports",
-    "build:local": "npm run build:local --workspaces --if-present",
+    "dev": "turbo run dev",
+    "dev:dashboard": "turbo run dev --filter=dashboard",
+    "dev:expenses": "turbo run dev --filter=expenses",
+    "dev:reports": "turbo run dev --filter=reports",
+    "build:local": "turbo run build:local",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "tsx --test \"packages/**/*.test.ts\" \"apps/**/*.test.ts\" \"tests/**/*.test.ts\"",
     "deploy:expenses": "npm run deploy --workspace expenses",
@@ -28,12 +28,13 @@
     "@types/node": "^24.0.0",
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0",
-    "concurrently": "10.0.7",
     "tsx": "4.23.15",
+    "turbo": "2.11.13",
     "typescript": "6.0.3",
     "zephyr-rspack-plugin": "1.8.0"
   },
   "engines": {
     "node": ">=22.12.0"
-  }
+  },
+  "packageManager": "npm@11.12.1"
 }

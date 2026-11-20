@@ -13,7 +13,9 @@ npm ci
 npm run dev
 ```
 
-Open <http://localhost:3000>. Expenses and Reports also run independently on ports 3001 and 3002. To validate the checkout, run `npm run typecheck`, `npm test`, and `npm run build:local`.
+Turborepo starts the dashboard on <http://localhost:3000>, Expenses on port 3001, and Reports on port 3002. To start one app, use `npm run dev:dashboard`, `npm run dev:expenses`, or `npm run dev:reports`.
+
+Run `npm run typecheck` and `npm test` to check the workspace. Use `npm run build:local` for production bundles. Turbo caches each app’s `dist/` and restores it when the app and its build inputs are unchanged.
 
 ## How the applications fit together
 
@@ -37,7 +39,7 @@ npm run deploy:reports
 npm run deploy:dashboard
 ```
 
-The deploy scripts enable the Zephyr Rspack plugin. Zephyr uses its default cloud integration. The dashboard declares both remote names under `zephyr:dependencies` with `workspace:*`. Zephyr resolves those names at build time using the Git and deployment context. Open the dashboard URL from the build and inspect the network requests for both remotes.
+The deploy scripts call Rspack directly with the Zephyr plugin so each invocation publishes a build. Zephyr uses its default cloud integration. The dashboard declares both remote names under `zephyr:dependencies` with `workspace:*`. Zephyr resolves those names at build time using the Git and deployment context. Open the dashboard URL from the build and inspect the network requests for both remotes.
 
 [Zephyr Rspack guide](https://docs.zephyr-cloud.io/bundlers/rspack) · [Remote dependency resolution](https://docs.zephyr-cloud.io/features/remote-dependencies)
 

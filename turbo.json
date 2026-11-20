@@ -1,0 +1,15 @@
+{
+  "$schema": "https://turborepo.dev/schema.json",
+  "ui": "stream",
+  "globalDependencies": ["config/**", "tsconfig.base.json"],
+  "tasks": {
+    "dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "build:local": {
+      "dependsOn": ["^build:local"],
+      "outputs": ["dist/**"]
+    }
+  }
+}
