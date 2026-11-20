@@ -1,8 +1,8 @@
-# Field Ledger
+# Renovation Tracker
 
-Field Ledger is a renovation tracker for reviewing purchases and spending by room or supplier. Explore the sample receipts, open a purchase to see its line items, or filter the ledger to update the spending summary. The sample data uses Brazilian reais (BRL). No account or backend is required to use the dashboard.
+Review renovation purchases and track spending by room or supplier. Explore the sample receipts, open a purchase to see its line items, or filter the ledger to update the spending summary. The sample data uses Brazilian reais (BRL). No account or backend is required to use the dashboard.
 
-[Open the renovation tracker](https://rodrigoj-borba-7-dashboard-valor-renovation-dashb-9263ba39e-ze.zephyrcloud.app/) · [Watch the captioned demo (MP4)](https://github.com/rjborba/valor-renovation-dashboard/releases/download/renovation-tracker/field-ledger-demo.mp4)
+[Open the renovation tracker](https://rodrigoj-borba-7-dashboard-valor-renovation-dashb-9263ba39e-ze.zephyrcloud.app/) · [Watch the captioned demo (MP4)](https://github.com/rjborba/valor-renovation-dashboard/releases/download/renovation-tracker-demo/renovation-tracker-demo.mp4)
 
 ## Run locally
 

@@ -8,7 +8,7 @@ export default function Standalone() {
   return (
     <div className="expenses-standalone">
       <header className="expenses-standalone__header">
-        <h1>Field Ledger</h1>
+        <h1>Renovation Tracker</h1>
       </header>
       <main className="expenses-standalone__main">
         <ExpensesFeature

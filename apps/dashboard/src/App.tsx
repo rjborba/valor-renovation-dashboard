@@ -89,14 +89,14 @@ export default function App() {
         <div className="shell masthead-line">
           <span className="wordmark">
             <i aria-hidden="true" />
-            Field Ledger
+            Renovation Tracker
           </span>
         </div>
       </header>
       <main id="overview" className="shell">
         <div className="intro">
           <h1>
-            Renovation tracker<span>.</span>
+            Spending overview<span>.</span>
           </h1>
           <p className="period">
             <span>Reporting period</span>November 2026
@@ -128,7 +128,7 @@ export default function App() {
         </div>
       </main>
       <footer className="shell">
-        <span>Field Ledger</span>
+        <span>Renovation Tracker</span>
         <span>Sample purchases · Brazilian reais (BRL)</span>
       </footer>
     </>
