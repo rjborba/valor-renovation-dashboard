@@ -1,7 +1,7 @@
 import { deepStrictEqual, strictEqual } from 'node:assert/strict';
 import { test } from 'node:test';
-import { filterTasks, type RenovationTask } from '@valor/contracts';
-import { localDateKey, summarizeCommitments } from './summarizeCommitments';
+import { filterTasks, localDateKey, type RenovationTask } from '@valor/contracts';
+import { summarizeCommitments } from './summarizeCommitments';
 
 const today = '2026-11-20';
 const shared: RenovationTask = {

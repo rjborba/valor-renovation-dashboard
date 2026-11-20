@@ -1,12 +1,5 @@
 import type { RenovationTask, TaskStatus } from '@valor/contracts';
 
-export function localDateKey(date: Date) {
-  const year = String(date.getFullYear()).padStart(4, '0');
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-}
-
 export function summarizeCommitments(tasks: readonly RenovationTask[], today: string) {
   const counts: Record<TaskStatus, number> = { Open: 0, 'In progress': 0, Done: 0 };
   const overdue: RenovationTask[] = [];

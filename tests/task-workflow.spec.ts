@@ -144,3 +144,20 @@ test('changes status from the row and retries a failed update without losing the
   await expectProgress(page, 1, 1);
   expect(JSON.parse((await readStorage(page))!)).toEqual([{ ...task, status: 'Done' }]);
 });
+
+test.describe('default promised date', () => {
+  test.use({ timezoneId: 'America/Recife' });
+
+  test('uses the local date each time the add dialog opens', async ({ page }) => {
+    await page.clock.setFixedTime(new Date('2027-04-09T02:59:00Z'));
+    await page.goto('/');
+    const add = board(page).getByRole('button', { name: 'Add task' });
+    const dialog = page.getByRole('dialog', { name: 'Add task' });
+    await add.click();
+    await expect(dialog.getByLabel('Promised due date')).toHaveValue('2027-04-08');
+    await dialog.getByRole('button', { name: 'Cancel' }).click();
+    await page.clock.setFixedTime(new Date('2027-04-09T03:01:00Z'));
+    await add.click();
+    await expect(dialog.getByLabel('Promised due date')).toHaveValue('2027-04-09');
+  });
+});

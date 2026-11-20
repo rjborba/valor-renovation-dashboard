@@ -1,4 +1,5 @@
 import {
+  localDateKey,
   taskStatuses,
   type RenovationTask,
   type ReportsFeatureProps,
@@ -6,7 +7,7 @@ import {
 import { Badge, Card, CardContent, Progress, TaskStatusSymbol } from '@valor/ui';
 import '@valor/ui/styles.css';
 import { useId } from 'react';
-import { localDateKey, summarizeCommitments } from './summarizeCommitments';
+import { summarizeCommitments } from './summarizeCommitments';
 
 const formatCount = new Intl.NumberFormat('en');
 const formatPercent = new Intl.NumberFormat('en', { style: 'percent' });

@@ -1,5 +1,5 @@
 import { useId, useRef, useState, type FormEvent, type RefObject } from 'react';
-import { normalizeAssignees, taskStatuses, type RenovationTask, type TaskStatus } from '@valor/contracts';
+import { localDateKey, normalizeAssignees, taskStatuses, type RenovationTask, type TaskStatus } from '@valor/contracts';
 import {
   Button,
   Checkbox,
@@ -45,7 +45,7 @@ function TaskFields({
   const newId = useRef<string | null>(null);
   const assigneeInput = useRef<HTMLInputElement>(null);
   const [description, setDescription] = useState(task?.description ?? '');
-  const [dueDate, setDueDate] = useState(task?.dueDate ?? '');
+  const [dueDate, setDueDate] = useState(() => task?.dueDate ?? localDateKey(new Date()));
   const [status, setStatus] = useState<TaskStatus>(task?.status ?? 'Open');
   const [selected, setSelected] = useState<readonly string[]>(task?.assignees ?? []);
   const [customAssignees, setCustomAssignees] = useState<string[]>([]);
