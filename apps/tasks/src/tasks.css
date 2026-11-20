@@ -480,6 +480,10 @@ body:has(.tasks-standalone) {
   .task-board__new-assignee button {
     justify-self: start;
   }
+
+  .task-board__assignee-options {
+    grid-template-columns: repeat(auto-fit, minmax(min(6.5rem, 100%), 1fr));
+  }
 }
 
 @media (forced-colors: active) {

@@ -35,7 +35,7 @@ function TaskFields({
   const [customAssignees, setCustomAssignees] = useState<string[]>([]);
   const [newAssignee, setNewAssignee] = useState('');
   const [assigneeError, setAssigneeError] = useState(false);
-  const choices = normalizeAssignees([...assignees, ...(task?.assignees ?? []), ...customAssignees]);
+  const choices = normalizeAssignees([...customAssignees, ...assignees, ...(task?.assignees ?? [])]);
 
   function setAssigneeChecked(name: string, checked: boolean) {
     setSelected((current) => checked
@@ -47,8 +47,8 @@ function TaskFields({
   function addAssignee() {
     const name = newAssignee.trim();
     if (!name) return;
-    setCustomAssignees((current) => normalizeAssignees([...current, name]));
     const existing = choices.find((choice) => choice.toLowerCase() === name.toLowerCase());
+    if (!existing) setCustomAssignees((current) => [name, ...current]);
     setAssigneeChecked(existing ?? name, true);
     setNewAssignee('');
     assigneeInput.current?.focus();
