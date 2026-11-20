@@ -11,3 +11,4 @@ export { NativeSelect, NativeSelectOption } from './components/native-select';
 export { Progress } from './components/progress';
 export { Textarea } from './components/textarea';
 export { TaskStatusSymbol } from './components/task-status-symbol';
+export { TaskStatusMenu } from './components/task-status-menu';

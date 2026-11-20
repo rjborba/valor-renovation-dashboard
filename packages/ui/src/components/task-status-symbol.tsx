@@ -9,8 +9,22 @@ const symbols = {
   Done: { Icon: CircleCheck, color: 'text-emerald-700' },
 } satisfies Record<TaskStatus, { Icon: typeof Circle; color: string }>;
 
-export function TaskStatusSymbol({ status }: { status: TaskStatus }) {
+export function TaskStatusIcon({ status }: { status: TaskStatus }) {
   const { Icon, color } = symbols[status];
+  return <Icon aria-hidden="true" className={`size-4 shrink-0 ${color}`} strokeWidth={2.5} />;
+}
+
+export function StatusTooltipContent({ status }: { status: TaskStatus }) {
+  return (
+    <Tooltip.Portal>
+      <Tooltip.Content sideOffset={4} className="z-50 rounded-md bg-foreground px-2 py-1 text-xs font-medium text-background shadow-sm">
+        {status}
+      </Tooltip.Content>
+    </Tooltip.Portal>
+  );
+}
+
+export function TaskStatusSymbol({ status }: { status: TaskStatus }) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -19,20 +33,16 @@ export function TaskStatusSymbol({ status }: { status: TaskStatus }) {
         <Tooltip.Trigger
           type="button"
           aria-label={`Status: ${status}`}
-          className={`inline-flex size-7 shrink-0 cursor-help items-center justify-center rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-ring ${color}`}
+          className="inline-flex size-7 shrink-0 cursor-help items-center justify-center rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
           onClick={event => {
             // Tapping the symbol should also reveal its name.
             event.preventDefault();
             setOpen(true);
           }}
         >
-          <Icon aria-hidden="true" className="size-4" strokeWidth={2.5} />
+          <TaskStatusIcon status={status} />
         </Tooltip.Trigger>
-        <Tooltip.Portal>
-          <Tooltip.Content sideOffset={4} className="z-50 rounded-md bg-foreground px-2 py-1 text-xs font-medium text-background shadow-sm">
-            {status}
-          </Tooltip.Content>
-        </Tooltip.Portal>
+        <StatusTooltipContent status={status} />
       </Tooltip.Root>
     </Tooltip.Provider>
   );

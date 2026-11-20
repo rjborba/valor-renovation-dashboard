@@ -106,3 +106,39 @@ test('recovers from invalid stored data and retries a failed save with the draft
   await expectProgress(page, 0, 1);
   await expect(board(page).getByRole('article')).toHaveCount(1);
 });
+
+test('changes status from the row and retries a failed update without losing the task', async ({ page }) => {
+  const task = { id: 'inline', description, dueDate: '2027-04-10', status: 'Open', assignees: ['Architect', 'Engineer'] };
+  await openWithStorage(page, JSON.stringify([task]));
+  const row = board(page).getByRole('article', { name: description });
+  const trigger = row.getByRole('button', { name: 'Status: Open', exact: true });
+  const menu = page.getByRole('menu', { name: 'Change task status' });
+  await trigger.press('Enter');
+  await expect(menu.getByRole('menuitemradio', { name: 'Open', exact: true })).toBeChecked();
+  await page.keyboard.press('Escape');
+  await expect(menu).toHaveCount(0);
+  await expect(trigger).toBeFocused();
+
+  await page.evaluate(key => {
+    const write = Storage.prototype.setItem;
+    Storage.prototype.setItem = function (name, value) {
+      if (name === key) {
+        Storage.prototype.setItem = write;
+        throw new DOMException('Storage quota exceeded', 'QuotaExceededError');
+      }
+      return write.call(this, name, value);
+    };
+  }, taskStorageKey);
+  await trigger.click();
+  await menu.getByRole('menuitemradio', { name: 'Done', exact: true }).click();
+  await expect(row.getByRole('alert')).toContainText('Could not save the status');
+  await expectProgress(page, 0, 1);
+  await trigger.click();
+  await menu.getByRole('menuitemradio', { name: 'Done', exact: true }).click();
+  await expect(row.getByRole('button', { name: 'Status: Done' })).toBeVisible();
+  await expect(row.getByRole('alert')).toHaveCount(0);
+  await expectProgress(page, 1, 1);
+  await page.reload();
+  await expectProgress(page, 1, 1);
+  expect(JSON.parse((await readStorage(page))!)).toEqual([{ ...task, status: 'Done' }]);
+});

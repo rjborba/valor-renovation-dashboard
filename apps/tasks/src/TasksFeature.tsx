@@ -6,7 +6,7 @@ import {
   type TaskStatus,
   type TasksFeatureProps,
 } from '@valor/contracts';
-import { Badge, Button, Card, Label, NativeSelect, NativeSelectOption, TaskStatusSymbol } from '@valor/ui';
+import { Badge, Button, Card, Label, NativeSelect, NativeSelectOption, TaskStatusMenu } from '@valor/ui';
 import '@valor/ui/styles.css';
 import TaskDialog, { type TaskAction } from './TaskDialog';
 
@@ -20,11 +20,27 @@ const dateFormat = new Intl.DateTimeFormat('en-GB', {
 function TaskRow({
   task,
   open,
+  updateTask,
 }: {
   task: RenovationTask;
+  updateTask: TasksFeatureProps['onUpdateTask'];
   open: (action: TaskAction, trigger: HTMLButtonElement) => void;
 }) {
   const titleId = useId();
+  const [saving, setSaving] = useState(false);
+  const [failed, setFailed] = useState(false);
+
+  async function changeStatus(status: TaskStatus) {
+    setSaving(true);
+    setFailed(false);
+    try {
+      await updateTask({ ...task, status });
+    } catch {
+      setFailed(true);
+    } finally {
+      setSaving(false);
+    }
+  }
 
   return (
     <article
@@ -46,7 +62,7 @@ function TaskRow({
         </ul>
       </div>
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1 @lg:justify-end">
-        <TaskStatusSymbol status={task.status} />
+        <TaskStatusMenu status={task.status} onChange={changeStatus} disabled={saving} />
         <dl>
           <dt className="sr-only">Promised due date</dt>
           <dd className="text-xs font-medium whitespace-nowrap text-muted-foreground tabular-nums">
@@ -57,6 +73,7 @@ function TaskRow({
       <div className="-mx-2 flex flex-wrap items-center gap-1 @3xs:mx-0 @3xs:justify-end">
         <Button
           type="button"
+          disabled={saving}
           variant="ghost"
           size="sm"
           className="h-9 px-2 @lg:h-8"
@@ -67,6 +84,7 @@ function TaskRow({
         </Button>
         <Button
           type="button"
+          disabled={saving}
           variant="ghost"
           size="sm"
           className="h-9 px-2 text-muted-foreground hover:bg-destructive/10 hover:text-destructive @lg:h-8"
@@ -76,6 +94,7 @@ function TaskRow({
           Delete
         </Button>
       </div>
+      {failed && <p role="alert" className="col-span-full text-xs text-destructive">Could not save the status. Choose it again to retry.</p>}
     </article>
   );
 }
@@ -177,7 +196,7 @@ export default function TasksFeature({
         {tasks.length > 0 ? (
           <ul className="divide-y divide-border" role="list">
             {tasks.map((task) => (
-              <li key={task.id}><TaskRow task={task} open={openDialog} /></li>
+              <li key={task.id}><TaskRow task={task} open={openDialog} updateTask={onUpdateTask} /></li>
             ))}
           </ul>
         ) : (

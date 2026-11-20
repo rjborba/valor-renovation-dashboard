@@ -6,7 +6,7 @@ Track what each person on a renovation has promised and when it is due. A task c
 
 ## Using the board
 
-Add a task with a brief description, a promised due date, and one or more responsible people. Use a name or trade that makes sense for your site. Set its status to **Open**, **In progress**, or **Done**. Edit the task when a commitment changes, or delete it when it no longer belongs on the board.
+Add a task with a brief description, a promised due date, and one or more responsible people. Use a name or trade that makes sense for your site. Click the status symbol in a task row and choose **Open**, **In progress**, or **Done**. The change saves immediately. Edit the task when a commitment changes, or delete it when it no longer belongs on the board.
 
 Filter by assignee and status together to prepare for a conversation with a contractor. The progress summary uses the same filtered tasks. Jointly assigned work counts once, and a task becomes overdue the day after its promised date if it is still unfinished.
 
