@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { emptyFilters, filterTasks, normalizeAssignees, tasks, taskStatuses } from './index';
+import { emptyFilters, filterTasks, localDateKey, normalizeAssignees, tasks, taskStatuses } from './index';
 
 test('seed tasks cover the four trades, all statuses and shared responsibility', () => {
   assert.deepEqual(new Set(tasks.map(task => task.status)), new Set(taskStatuses));
@@ -18,4 +18,10 @@ test('joint owners match either assignee and status filters intersect', () => {
 
 test('assignee options retain the first spelling and order after trimming', () => {
   assert.deepEqual(normalizeAssignees([' Lia ', 'ANA', 'lia', 'Ana ', '  ']), ['Lia', 'ANA']);
+});
+
+test('local date changes at midnight', () => {
+  assert.equal(localDateKey(new Date(2026, 10, 20, 0, 1)), '2026-11-20');
+  assert.equal(localDateKey(new Date(2026, 10, 20, 23, 59)), '2026-11-20');
+  assert.equal(localDateKey(new Date(2026, 10, 21, 0, 1)), '2026-11-21');
 });

@@ -38,7 +38,6 @@ test('loads three independent remotes and places the summary above filters and t
 });
 
 test('status and assignee intersect across the board and summary, including an empty result', async ({ page }) => {
-  await page.clock.setFixedTime(new Date('2026-11-24T12:00:00Z'));
   await page.goto('/');
   const filters = filtersPanel(page);
   const status = filters.getByRole('combobox', { name: 'Status', exact: true });
@@ -46,11 +45,7 @@ test('status and assignee intersect across the board and summary, including an e
   await expectProgress(page, 1, 5);
   const counts = reports(page).getByLabel('Task counts by status');
   await expect(counts.getByRole('definition')).toHaveText(['2', '2', '1']);
-  await reports(page).getByText(/Promised due dates/).click();
-  const overdue = reports(page).getByRole('list', { name: 'Overdue' });
-  await expect(overdue.getByRole('listitem')).toHaveCount(1);
-  await expect(overdue.locator('time')).toHaveAttribute('datetime', '2026-11-23');
-  await expect(reports(page).getByRole('list', { name: 'Upcoming' })).toContainText('Due today');
+  await expect(reports(page).getByText(/Promised due dates/)).toHaveCount(0);
   await assignee.selectOption({ label: 'Electrician' });
   await expect(board(page).getByRole('article')).toHaveCount(2);
   await expectProgress(page, 1, 2);
@@ -66,7 +61,6 @@ test('status and assignee intersect across the board and summary, including an e
   await expect(board(page).getByRole('article')).toContainText('bedroom reading light');
   await expectProgress(page, 1, 1);
   await expect(counts.getByRole('definition')).toHaveText(['0', '0', '1']);
-  await expect(reports(page).getByText('No outstanding deadlines.')).toBeVisible();
   await assignee.selectOption({ label: 'Engineer' });
   await expect(board(page).getByRole('article')).toHaveCount(0);
   await expectProgress(page, 0, 0);

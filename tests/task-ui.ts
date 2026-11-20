@@ -6,6 +6,7 @@ export const filtersPanel = (page: Page) => page.getByRole('region', { name: 'Ta
 export const reports = (page: Page) => page.getByRole('region', { name: 'Task summary' });
 
 export async function expectProgress(page: Page, done: number, total: number) {
+  await expect(reports(page).getByText(`${total} ${total === 1 ? 'task' : 'tasks'} displayed`, { exact: true })).toBeVisible();
   await expect(reports(page).getByText(`${done} of ${total} ${total === 1 ? 'task' : 'tasks'} done`, { exact: true })).toBeVisible();
 }
 

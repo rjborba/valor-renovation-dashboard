@@ -1,6 +1,6 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import { taskStorageKey } from '@valor/contracts/storage';
-import { board, expectProgress, openWithStorage, readStorage, reports } from './task-ui';
+import { board, expectProgress, openWithStorage, readStorage } from './task-ui';
 
 const description = 'Confirm fixture heights';
 const revised = 'Approve revised fixture heights';
@@ -37,8 +37,6 @@ test('creates, edits and deletes a shared task, persisting its owners, status an
   await page.keyboard.press('Escape');
   await expect(page.getByRole('tooltip')).toHaveCount(0);
   await expectProgress(page, 0, 1);
-  await reports(page).getByText(/Promised due dates/).click();
-  await expect(reports(page).getByText(description, { exact: true })).toBeVisible();
   const [created] = JSON.parse((await readStorage(page))!);
   expect(created).toMatchObject({ description, dueDate: '2027-04-10', status: 'In progress' });
   expect([...created.assignees].sort()).toEqual(['Electrician', 'Site lead']);

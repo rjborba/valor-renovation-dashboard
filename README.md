@@ -8,7 +8,7 @@ Track what each person on a renovation has promised and when it is due. A task c
 
 Add a task with a brief description, a promised due date, and one or more responsible people. Use a name or trade that makes sense for your site. Click the status symbol in a task row and choose **Open**, **In progress**, or **Done**. The change saves immediately. Click a task row to edit its details when a commitment changes, or delete it when it no longer belongs on the board.
 
-Filter by assignee and status together to prepare for a conversation with a contractor. The progress summary uses the same filtered tasks. Jointly assigned work counts once, and a task becomes overdue the day after its promised date if it is still unfinished.
+Filter by assignee and status together to prepare for a conversation with a contractor. The summary shows how many tasks are displayed, how many are complete, and how many have each status. Jointly assigned tasks count once.
 
 ## Run locally
 
@@ -28,7 +28,7 @@ Turborepo runs the dashboard on <http://localhost:3000>, Tasks on <http://localh
 | Dashboard | Owns the repository, selected filters and layout | Loads three remotes and supplies the same filtered tasks to Tasks and Reports |
 | Tasks | Task board, editor and assignments | Exposes `tasks/TasksFeature`. Sends task changes to the host through typed callbacks |
 | Filters | Status and assignee controls | Exposes `filters/FiltersFeature`. Sends selections to the host so the board and summary update together |
-| Reports | Progress and outstanding commitments | Exposes `reports/ReportsFeature`. Computes its summary from the tasks supplied by the host |
+| Reports | Displayed task total, completion and status counts | Exposes `reports/ReportsFeature`. Computes its summary from the tasks supplied by the host |
 
 Each remote is an independent Rspack build. The dashboard downloads the remote manifests and JavaScript at runtime. React and React DOM are shared singletons. The colored outlines show the exact federation imports. Each feature has its own loading state, error boundary and retry action, so a single failed remote can recover while the others remain usable.
 
