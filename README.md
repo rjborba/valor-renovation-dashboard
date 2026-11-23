@@ -23,6 +23,8 @@ npm run dev
 
 The pinned `vite-plugin-zephyr@1.8.0` publishes through build hooks, including single-environment watch builds. We use build watch explicitly rather than assuming that the plain Vite dev server uploads on every save. Zephyr errors fail these commands through `ZE_FAIL_BUILD=true`; clear any inherited `ZE_DISABLED=true` to enable cloud publication.
 
+`config/zephyrRuntime.ts` works around the pinned Zephyr runtime caching only the remotes registered at its first request. Vite's `loaded-first` strategy registers remotes lazily, so later requests could retain localhost manifest URLs in cloud builds. The workaround resolves the current registrations on each request while preserving Zephyr's manifest cache and independent remote loading. Review this workaround when upgrading Zephyr; the build fails if the expected upstream code changes.
+
 Use `npm run dev:dashboard`, `npm run dev:tasks`, `npm run dev:summary`, or `npm run dev:filters` to watch and publish a single workspace. These shortcuts skip the initial deployment sequence; publish the remotes before starting the dashboard on a fresh setup. `npm run deploy` remains the one-time deployment command.
 
 ## Run locally

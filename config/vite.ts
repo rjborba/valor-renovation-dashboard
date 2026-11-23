@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react';
 import tailwind from '@tailwindcss/postcss';
 import type { ModuleFederationOptions } from '@module-federation/vite';
 import { withZephyr } from 'vite-plugin-zephyr';
+import { zephyrRuntimeRemotes } from './zephyrRuntime';
 
 export const dashboardPort = Number(process.env.VALOR_BASE_PORT ?? 3000);
 
@@ -32,7 +33,7 @@ export function createConfig(
     return {
       root,
       cacheDir: `node_modules/.vite/${mode}-${port}`,
-      plugins: [react(), ...withZephyr({ mfConfig })],
+      plugins: [react(), zephyrRuntimeRemotes(), ...withZephyr({ mfConfig })],
       css: { postcss: { plugins: [tailwind()] } },
       server: {
         port,
