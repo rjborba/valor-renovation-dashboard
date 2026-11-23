@@ -6,22 +6,22 @@ export default defineConfig({
   webServer: [
     {
       env: { VALOR_BASE_PORT: String(dashboardPort) },
-      command: `npm run dev -w dashboard`,
+      command: `npm run dev:local -w dashboard`,
       url: dashboardOrigin,
     },
     {
       env: { VALOR_BASE_PORT: String(dashboardPort) },
-      command: `npm run dev -w tasks`,
+      command: `npm run dev:local -w tasks`,
       url: `${tasksOrigin}/mf-manifest.json`,
     },
     {
       env: { VALOR_BASE_PORT: String(dashboardPort) },
-      command: `npm run dev -w summary`,
+      command: `npm run dev:local -w summary`,
       url: `${summaryOrigin}/mf-manifest.json`,
     },
     {
       env: { VALOR_BASE_PORT: String(dashboardPort) },
-      command: `npm run dev -w filters`,
+      command: `npm run dev:local -w filters`,
       url: `${filtersOrigin}/mf-manifest.json`,
     },
   ],

@@ -7,6 +7,10 @@
       "cache": false,
       "persistent": true
     },
+    "dev:local": {
+      "cache": false,
+      "persistent": true
+    },
     "build:local": {
       "dependsOn": ["^build:local"],
       "inputs": [

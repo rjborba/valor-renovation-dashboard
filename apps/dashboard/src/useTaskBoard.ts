@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   emptyFilters,
   filterTasks,
@@ -7,16 +7,9 @@ import {
   type RenovationTask,
   type TasksFeatureProps,
 } from '@valor/contracts';
-import { Button } from '@valor/ui';
-import { taskRepository, type TaskRepository } from '@valor/contracts/storage';
+import type { TaskRepository } from '@valor/contracts/storage';
 
-export function TaskBoard({
-  repository = taskRepository,
-  children,
-}: {
-  repository?: TaskRepository;
-  children: (board: TasksFeatureProps & FiltersFeatureProps) => ReactNode;
-}) {
+export function useTaskBoard(repository: TaskRepository) {
   const [records, setRecords] = useState<readonly RenovationTask[] | null>(null);
   const [filters, setFilters] = useState(emptyFilters);
   const [loadError, setLoadError] = useState('');
@@ -39,17 +32,6 @@ export function TaskBoard({
     return () => { generation.current++; };
   }, [repository, attempt]);
 
-  if (loadError) {
-    return (
-      <div role="alert" className="space-y-3 rounded-lg border bg-card p-5 text-sm">
-        <h2 className="font-semibold">Could not open your task board</h2>
-        <p>{loadError}</p>
-        <Button variant="outline" size="sm" onClick={() => setAttempt(n => n + 1)}>Retry loading tasks</Button>
-      </div>
-    );
-  }
-  if (records === null) return <p role="status" className="p-4 text-sm text-muted-foreground">Loading tasks…</p>;
-
   async function apply(change: Promise<readonly RenovationTask[]>, revealId?: string) {
     const current = generation.current;
     const rows = await change;
@@ -65,11 +47,11 @@ export function TaskBoard({
     });
   }
 
-  const assignees = normalizeAssignees(records.flatMap(task => task.assignees)).sort();
+  const assignees = normalizeAssignees((records ?? []).flatMap(task => task.assignees)).sort();
   // A different record can supply the display spelling after an edit or deletion.
   const selected = assignees.find(name => name.toLowerCase() === filters.assignee.toLowerCase()) ?? '';
   const activeFilters = { ...filters, assignee: selected };
-  return children({
+  const board: (TasksFeatureProps & FiltersFeatureProps) | null = records === null ? null : {
     tasks: filterTasks(records, activeFilters),
     assignees,
     filters: activeFilters,
@@ -77,5 +59,7 @@ export function TaskBoard({
     onAddTask: task => apply(repository.add(task), task.id),
     onUpdateTask: task => apply(repository.update(task), task.id),
     onRemoveTask: id => apply(repository.remove(id)),
-  });
+  };
+
+  return { board, loadError, retry: () => setAttempt(n => n + 1) };
 }

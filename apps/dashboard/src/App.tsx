@@ -5,8 +5,8 @@ import {
   useState,
   type ComponentType,
 } from 'react';
-import { TaskBoard } from '@valor/task-board';
-import type { TaskRepository } from '@valor/contracts/storage';
+import { useTaskBoard } from './useTaskBoard';
+import { taskRepository, type TaskRepository } from '@valor/contracts/storage';
 import { retryRemote } from '../../../config/retryRemote';
 import { Button, FeatureBoundary } from '@valor/ui';
 import '@valor/ui/styles.css';
@@ -79,10 +79,12 @@ function RemoteFeature<P extends object>({
 }
 
 export default function App({
-  repository,
+  repository = taskRepository,
 }: {
   repository?: TaskRepository;
 }) {
+  const { board, loadError, retry } = useTaskBoard(repository);
+
   return (
     <div className="min-h-screen bg-background text-foreground antialiased">
       <a href="#overview" className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:rounded-md focus:bg-card focus:p-2">
@@ -101,40 +103,46 @@ export default function App({
       </header>
       <main id="overview" className="mx-auto max-w-[1440px] px-4 pt-7 pb-12 sm:px-8 sm:pt-10 lg:px-12">
         <h1 className="mb-5 text-2xl font-semibold tracking-tight sm:text-3xl">Renovation tasks</h1>
-        <TaskBoard repository={repository}>
-          {(board) => (
-            <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(280px,0.42fr)]">
-              <div className="min-w-0 lg:col-span-2">
-                <RemoteFeature
-                  name="Summary"
-                  moduleId="summary/SummaryFeature"
-                  load={loadSummary}
-                  featureProps={{ tasks: board.tasks }}
-                />
-              </div>
-              <aside className="min-w-0 lg:col-start-2 lg:row-start-2">
-                <RemoteFeature
-                  name="Filters"
-                  moduleId="filters/FiltersFeature"
-                  load={loadFilters}
-                  featureProps={{
-                    assignees: board.assignees,
-                    filters: board.filters,
-                    onFiltersChange: board.onFiltersChange,
-                  }}
-                />
-              </aside>
-              <div className="min-w-0 lg:col-start-1 lg:row-start-2">
-                <RemoteFeature
-                  name="Tasks"
-                  moduleId="tasks/TasksFeature"
-                  load={loadTasks}
-                  featureProps={board}
-                />
-              </div>
+        {loadError ? (
+          <div role="alert" className="space-y-3 rounded-lg border bg-card p-5 text-sm">
+            <h2 className="font-semibold">Could not open your task board</h2>
+            <p>{loadError}</p>
+            <Button variant="outline" size="sm" onClick={retry}>Retry loading tasks</Button>
+          </div>
+        ) : board === null ? (
+          <p role="status" className="p-4 text-sm text-muted-foreground">Loading tasks…</p>
+        ) : (
+          <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(280px,0.42fr)]">
+            <div className="min-w-0 lg:col-span-2">
+              <RemoteFeature
+                name="Summary"
+                moduleId="summary/SummaryFeature"
+                load={loadSummary}
+                featureProps={{ tasks: board.tasks }}
+              />
             </div>
-          )}
-        </TaskBoard>
+            <aside className="min-w-0 lg:col-start-2 lg:row-start-2">
+              <RemoteFeature
+                name="Filters"
+                moduleId="filters/FiltersFeature"
+                load={loadFilters}
+                featureProps={{
+                  assignees: board.assignees,
+                  filters: board.filters,
+                  onFiltersChange: board.onFiltersChange,
+                }}
+              />
+            </aside>
+            <div className="min-w-0 lg:col-start-1 lg:row-start-2">
+              <RemoteFeature
+                name="Tasks"
+                moduleId="tasks/TasksFeature"
+                load={loadTasks}
+                featureProps={board}
+              />
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );

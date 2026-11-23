@@ -7,11 +7,16 @@
     "packages/*"
   ],
   "scripts": {
-    "dev": "turbo run dev",
+    "dev": "ZE_FAIL_BUILD=true npm run deploy && turbo run dev",
+    "dev:local": "turbo run dev:local",
     "dev:dashboard": "turbo run dev --filter=dashboard",
+    "dev:local:dashboard": "turbo run dev:local --filter=dashboard",
     "dev:tasks": "turbo run dev --filter=tasks",
+    "dev:local:tasks": "turbo run dev:local --filter=tasks",
     "dev:filters": "turbo run dev --filter=filters",
+    "dev:local:filters": "turbo run dev:local --filter=filters",
     "dev:summary": "turbo run dev --filter=summary",
+    "dev:local:summary": "turbo run dev:local --filter=summary",
     "build:local": "turbo run build:local",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "tsx --test \"packages/**/*.test.ts\" \"apps/**/*.test.ts\" \"tests/**/*.test.ts\"",

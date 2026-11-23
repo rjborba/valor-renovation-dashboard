@@ -4,7 +4,6 @@
 /* All app stylesheets need the same utility order when a remote loads last. */
 @source "../../../apps/*/src/**/*.{ts,tsx,html}";
 @source "./components";
-@source "../../task-board/src";
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
