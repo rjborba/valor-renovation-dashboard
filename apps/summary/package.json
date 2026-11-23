@@ -3,10 +3,10 @@
   "version": "2.0.0",
   "private": true,
   "scripts": {
-    "dev": "vite",
-    "build:local": "vite build",
-    "preview": "vite preview",
-    "deploy": "vite build --mode zephyr"
+    "dev": "ZE_DISABLED=true vite",
+    "build:local": "ZE_DISABLED=true vite build",
+    "preview": "ZE_DISABLED=true vite preview",
+    "deploy": "vite build"
   },
   "dependencies": {
     "@valor/contracts": "1.0.0",
