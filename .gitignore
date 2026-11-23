@@ -5,8 +5,6 @@ dist/
 @mf-types/
 .zephyr/
 *.tsbuildinfo
-playwright-report/
-test-results/
 .env
 .env.*
 !.env.example

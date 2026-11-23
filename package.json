@@ -7,7 +7,7 @@
     "packages/*"
   ],
   "scripts": {
-    "dev": "ZE_FAIL_BUILD=true npm run deploy && turbo run dev",
+    "dev": "turbo run dev",
     "dev:local": "turbo run dev:local",
     "dev:dashboard": "turbo run dev --filter=dashboard",
     "dev:local:dashboard": "turbo run dev:local --filter=dashboard",
@@ -20,7 +20,6 @@
     "build:local": "turbo run build:local",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "tsx --test \"packages/**/*.test.ts\" \"apps/**/*.test.ts\" \"tests/**/*.test.ts\"",
-    "test:e2e": "playwright test",
     "deploy:tasks": "npm run deploy --workspace tasks",
     "deploy:summary": "npm run deploy --workspace summary",
     "deploy:filters": "npm run deploy --workspace filters",
@@ -30,7 +29,6 @@
   "devDependencies": {
     "@module-federation/runtime": "2.9.3",
     "@module-federation/vite": "1.24.1",
-    "@playwright/test": "1.65.1",
     "@tailwindcss/postcss": "4.3.5",
     "@types/node": "^24.0.0",
     "@types/react": "19.3.0",

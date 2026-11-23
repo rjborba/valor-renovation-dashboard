@@ -5,7 +5,6 @@
     "apps/*/src",
     "apps/*/vite.config.ts",
     "packages/*/src",
-    "tests",
-    "playwright.config.ts"
+    "tests"
   ]
 }

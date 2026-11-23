@@ -3,11 +3,11 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "ZE_FAIL_BUILD=true vite build --watch",
+    "dev": "ZE_DISABLED=true vite",
     "dev:local": "ZE_DISABLED=true vite",
     "build:local": "ZE_DISABLED=true vite build",
     "preview": "ZE_DISABLED=true vite preview",
-    "deploy": "vite build"
+    "deploy": "ZE_DISABLED=false ZE_FAIL_BUILD=true vite build"
   },
   "dependencies": {
     "@valor/contracts": "1.0.0",
